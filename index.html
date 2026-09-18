@@ -7941,7 +7941,13 @@ function setupTrashCan() {
         };
     }
 
-    function applyPosition(position) {
+    function applyPosition(position, persist = false) {
+        trash.style.right =
+            "auto";
+
+        trash.style.bottom =
+            "auto";
+
         const clamped =
             getClampedPosition(
                 Number(position.x),
@@ -7954,23 +7960,24 @@ function setupTrashCan() {
         trash.style.top =
             clamped.y + "px";
 
-        trash.style.right =
-            "auto";
-
-        trash.style.bottom =
-            "auto";
-
-        localStorage.setItem(
-            storageKey,
-            JSON.stringify(clamped)
-        );
+        if (persist)
+            localStorage.setItem(
+                storageKey,
+                JSON.stringify(clamped)
+            );
     }
 
     function restorePosition() {
-        const saved =
-            JSON.parse(
-                localStorage.getItem(storageKey)
-            );
+        let saved;
+
+        try {
+            saved =
+                JSON.parse(
+                    localStorage.getItem(storageKey)
+                );
+        } catch (error) {
+            return;
+        }
 
         if (
             !saved ||
@@ -7979,17 +7986,26 @@ function setupTrashCan() {
         )
             return;
 
-        applyPosition(saved);
+        requestAnimationFrame(
+            () =>
+                applyPosition(saved, true)
+        );
     }
 
     function clampSavedPosition() {
-        const saved =
-            JSON.parse(
-                localStorage.getItem(storageKey)
-            );
+        let saved;
+
+        try {
+            saved =
+                JSON.parse(
+                    localStorage.getItem(storageKey)
+                );
+        } catch (error) {
+            return;
+        }
 
         if (saved)
-            applyPosition(saved);
+            applyPosition(saved, true);
     }
 
     restorePosition();
@@ -8111,12 +8127,23 @@ function setupTrashCan() {
             false;
 
         if (hasMoved) {
-            localStorage.setItem(
-                storageKey,
-                JSON.stringify({
-                    x: parseFloat(trash.style.left),
-                    y: parseFloat(trash.style.top)
-                })
+            const fieldRect =
+                field.getBoundingClientRect();
+
+            const rect =
+                trash.getBoundingClientRect();
+
+            const position =
+                getClampedPosition(
+                    rect.left -
+                    fieldRect.left,
+                    rect.top -
+                    fieldRect.top
+                );
+
+            applyPosition(
+                position,
+                true
             );
         }
 
