@@ -2778,6 +2778,108 @@ h1 {
 
 }
 
+.trash-reaction {
+
+    position:
+        absolute;
+
+    z-index:
+        130;
+
+    left:
+        50%;
+
+    bottom:
+        calc(100% + 10px);
+
+    min-width:
+        96px;
+
+    max-width:
+        165px;
+
+    padding:
+        7px 10px;
+
+    border:
+        1px solid
+        rgba(255,255,255,.7);
+
+    border-radius:
+        14px 14px 14px 4px;
+
+    background:
+        rgba(255,253,245,.94);
+
+    color:
+        #4a5946;
+
+    box-shadow:
+        0 6px 14px
+        rgba(0,0,0,.16);
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size:
+        13px;
+
+    line-height:
+        1.25;
+
+    opacity:
+        0;
+
+    visibility:
+        hidden;
+
+    pointer-events:
+        none;
+
+    transform:
+        translateX(-50%)
+        rotate(-2deg)
+        translateY(4px);
+
+    transition:
+        opacity .2s ease,
+        transform .2s ease;
+
+}
+
+.trash-reaction.is-visible {
+
+    opacity:
+        1;
+
+    visibility:
+        visible;
+
+    transform:
+        translateX(-50%)
+        rotate(-2deg)
+        translateY(0);
+
+}
+
+.trash-reaction.is-below {
+
+    bottom:
+        auto;
+
+    top:
+        calc(100% + 10px);
+
+}
+
+.trash-can.reacting {
+
+    animation:
+        trashReact .3s ease;
+
+}
+
 .trash-can.is-hover .trash-can-lid {
 
     transform:
@@ -2790,6 +2892,22 @@ h1 {
 
     animation:
         trashPoof .65s ease;
+
+}
+
+@keyframes trashReact {
+
+    0%, 100% {
+        transform: translateX(0);
+    }
+
+    35% {
+        transform: translateX(-2px) rotate(-2deg);
+    }
+
+    70% {
+        transform: translateX(2px) rotate(2deg);
+    }
 
 }
 
@@ -4156,6 +4274,12 @@ footer {
         mga laki
     </div>
 
+    <div
+        class="trash-reaction"
+        id="trashReaction"
+        aria-live="polite">
+    </div>
+
 </div>
 
 
@@ -4549,6 +4673,10 @@ function mergeNotes(localNotes, remoteNotes) {
                             : []
                 }
             ]
+        )
+        .filter(
+            ([id]) =>
+                !deletedNoteIds.includes(id)
         )
     );
 
@@ -5711,7 +5839,12 @@ function getFilteredNotes() {
 
 
     let result =
-        [...notes];
+        notes.filter(
+            note =>
+                !deletedNoteIds.includes(
+                    note.id
+                )
+        );
 
 
     if (
@@ -6277,9 +6410,17 @@ function renderMiniNotes() {
                 key === "pinned"
                     ? notes.filter(
                         note =>
-                            note.pinned
+                            note.pinned &&
+                            !deletedNoteIds.includes(
+                                note.id
+                            )
                     )
-                    : notes;
+                    : notes.filter(
+                        note =>
+                            !deletedNoteIds.includes(
+                                note.id
+                            )
+                    );
 
 
             const search =
@@ -7704,6 +7845,122 @@ const farewellMessages = [
 
 ];
 
+const trashReactions = [
+    "again??",
+    "sure. throw it here.",
+    "ayaw na nimo?",
+    "sige, ilabay.",
+    "i won't judge.",
+    "another one 😭",
+    "noted. emotionally.",
+    "out of sight, out of mind.",
+    "okay fayn.",
+    "ayukonga."
+];
+
+const trashDropReactions = [
+    "gone.",
+    "bye bye.",
+    "deleted. rip.",
+    "that one is NOT coming back."
+];
+
+let trashReactionTimer =
+    null;
+
+let lastTrashReaction =
+    "";
+
+function pickTrashReaction(messages) {
+    if (messages.length < 2)
+        return messages[0];
+
+    let message;
+
+    do {
+        message =
+            messages[
+                Math.floor(
+                    Math.random() *
+                    messages.length
+                )
+            ];
+    } while (
+        message === lastTrashReaction
+    );
+
+    lastTrashReaction =
+        message;
+
+    return message;
+}
+
+function showTrashReaction(message) {
+    const trash =
+        document.getElementById(
+            "trashCan"
+        );
+
+    const bubble =
+        document.getElementById(
+            "trashReaction"
+        );
+
+    if (!trash || !bubble)
+        return;
+
+    bubble.textContent =
+        message;
+
+    bubble.classList.remove(
+        "is-below"
+    );
+
+    bubble.classList.add(
+        "is-visible"
+    );
+
+    if (
+        trash.getBoundingClientRect().top <
+        bubble.offsetHeight + 14
+    ) {
+        bubble.classList.add(
+            "is-below"
+        );
+    }
+
+    trash.classList.remove(
+        "reacting"
+    );
+
+    void trash.offsetWidth;
+
+    trash.classList.add(
+        "reacting"
+    );
+
+    clearTimeout(
+        trashReactionTimer
+    );
+
+    trashReactionTimer =
+        setTimeout(
+            () =>
+                bubble.classList.remove(
+                    "is-visible"
+                ),
+            2800
+        );
+}
+
+function showRandomTrashReaction() {
+    showTrashReaction(
+        pickTrashReaction(
+            trashReactions
+        )
+    );
+}
+
 
 function throwNoteAway(id) {
 
@@ -7717,6 +7974,12 @@ function throwNoteAway(id) {
     if (!note)
         return;
 
+    showTrashReaction(
+        pickTrashReaction(
+            trashDropReactions
+        )
+    );
+
 
     const trash =
         document.getElementById(
@@ -7729,28 +7992,21 @@ function throwNoteAway(id) {
             "meadow"
         );
 
+    const trashRect =
+        trash.getBoundingClientRect();
 
-    notes =
-        notes.filter(
-            n =>
-                n.id !== id
-        );
+    const fieldRect =
+        field.getBoundingClientRect();
 
+    const trashLeft =
+        trashRect.left -
+        fieldRect.left;
 
-    if (
-        currentNoteId === id
-    ) {
+    const trashTop =
+        trashRect.top -
+        fieldRect.top;
 
-        newNote();
-
-    }
-
-
-    saveStorage();
-
-    renderNotes();
-
-    renderMiniNotes();
+    deleteNoteById(id);
 
 
     trash.classList.remove(
@@ -7779,7 +8035,7 @@ function throwNoteAway(id) {
 
     poof.style.left =
         (
-            trash.offsetLeft +
+            trashLeft +
             25
         ) +
         "px";
@@ -7787,7 +8043,7 @@ function throwNoteAway(id) {
 
     poof.style.top =
         (
-            trash.offsetTop -
+            trashTop -
             10
         ) +
         "px";
@@ -7828,7 +8084,7 @@ function throwNoteAway(id) {
                 field.clientWidth -
                 250,
 
-                trash.offsetLeft -
+                trashLeft -
                 120
 
             )
@@ -7843,7 +8099,7 @@ function throwNoteAway(id) {
 
             10,
 
-            trash.offsetTop -
+            trashTop -
             75
 
         ) +
@@ -7915,23 +8171,45 @@ function setupTrashCan() {
     const storageKey =
         "trashCanPosition";
 
-    const field =
-        document.getElementById(
-            "meadow"
+    if (
+        trash.parentElement !==
+        document.body
+    ) {
+        const defaultRect =
+            trash.getBoundingClientRect();
+
+        document.body.appendChild(
+            trash
         );
+
+        trash.style.position =
+            "fixed";
+
+        trash.style.left =
+            defaultRect.left + "px";
+
+        trash.style.top =
+            defaultRect.top + "px";
+
+        trash.style.right =
+            "auto";
+
+        trash.style.bottom =
+            "auto";
+    }
 
     function getClampedPosition(x, y) {
         const maxX =
             Math.max(
                 0,
-                field.clientWidth -
+                window.innerWidth -
                 trash.offsetWidth
             );
 
         const maxY =
             Math.max(
                 0,
-                field.clientHeight -
+                window.innerHeight -
                 trash.offsetHeight
             );
 
@@ -7942,6 +8220,9 @@ function setupTrashCan() {
     }
 
     function applyPosition(position, persist = false) {
+        trash.style.position =
+            "fixed";
+
         trash.style.right =
             "auto";
 
@@ -8085,22 +8366,17 @@ function setupTrashCan() {
             hasMoved = true;
             trash.classList.add("dragging");
             trash.style.cursor = "grabbing";
+            trash.style.position = "fixed";
             trash.style.right = "auto";
             trash.style.bottom = "auto";
 
-            const fieldRect =
-                field.getBoundingClientRect();
-
-
             let x =
                 e.clientX -
-                fieldRect.left -
                 offsetX;
 
 
             let y =
                 e.clientY -
-                fieldRect.top -
                 offsetY;
 
 
@@ -8126,19 +8402,17 @@ function setupTrashCan() {
         isDragging =
             false;
 
-        if (hasMoved) {
-            const fieldRect =
-                field.getBoundingClientRect();
+        const didMove =
+            hasMoved;
 
+        if (didMove) {
             const rect =
                 trash.getBoundingClientRect();
 
             const position =
                 getClampedPosition(
-                    rect.left -
-                    fieldRect.left,
-                    rect.top -
-                    fieldRect.top
+                    rect.left,
+                    rect.top
                 );
 
             applyPosition(
@@ -8159,6 +8433,9 @@ function setupTrashCan() {
         trash.classList.remove(
             "dragging"
         );
+
+        if (!didMove)
+            showRandomTrashReaction();
 
         if (
             e &&
@@ -8195,36 +8472,51 @@ function setupTrashCan() {
     );
 
 
-    trash.addEventListener(
+    function pointIsOverTrash(e) {
+        const rect =
+            trash.getBoundingClientRect();
+
+        return (
+            e.clientX >= rect.left &&
+            e.clientX <= rect.right &&
+            e.clientY >= rect.top &&
+            e.clientY <= rect.bottom
+        );
+    }
+
+    document.addEventListener(
         "dragover",
         e => {
 
-            e.preventDefault();
-
-            trash.classList.add(
-                "is-hover"
-            );
+            if (pointIsOverTrash(e)) {
+                e.preventDefault();
+                trash.classList.add("is-hover");
+            } else {
+                trash.classList.remove("is-hover");
+            }
 
         }
     );
 
 
-    trash.addEventListener(
+    document.addEventListener(
         "dragleave",
-        () => {
+        e => {
 
-            trash.classList.remove(
-                "is-hover"
-            );
+            if (!pointIsOverTrash(e))
+                trash.classList.remove("is-hover");
 
         }
     );
 
 
-    trash.addEventListener(
+    document.addEventListener(
         "drop",
         e => {
 
+            if (!pointIsOverTrash(e))
+                return;
+
             e.preventDefault();
 
 
@@ -8233,11 +8525,32 @@ function setupTrashCan() {
             );
 
 
-            const id =
+            const draggedNote =
+                document.querySelector(
+                    ".being-dragged"
+                );
+
+            const draggedId =
+                draggedNote &&
+                draggedNote.dataset.noteId;
+
+            const transferredId =
                 e.dataTransfer.getData(
                     "text/plain"
                 );
 
+            const id =
+                notes.some(
+                    note =>
+                        note.id === draggedId
+                )
+                    ? draggedId
+                    : notes.some(
+                        note =>
+                            note.id === transferredId
+                    )
+                        ? transferredId
+                        : null;
 
             if (id) {
 
