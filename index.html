@@ -1200,6 +1200,127 @@ h1 {
 
 }
 
+.photo-picker {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        10px;
+
+    flex-wrap:
+        wrap;
+
+}
+
+.photo-input {
+
+    display:
+        none;
+
+}
+
+.photo-previews,
+.note-photo-gallery {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(110px, 1fr));
+
+    gap:
+        10px;
+
+    width:
+        100%;
+
+}
+
+.photo-preview,
+.note-photo {
+
+    position:
+        relative;
+
+    overflow:
+        hidden;
+
+    border-radius:
+        12px;
+
+    background:
+        var(--editor-bg);
+
+    border:
+        1px solid
+        var(--border);
+
+}
+
+.photo-preview img,
+.note-photo img {
+
+    display:
+        block;
+
+    width:
+        100%;
+
+    aspect-ratio:
+        1;
+
+    object-fit:
+        cover;
+
+}
+
+.photo-remove {
+
+    position:
+        absolute;
+
+    top:
+        5px;
+
+    right:
+        5px;
+
+    border:
+        0;
+
+    border-radius:
+        50%;
+
+    width:
+        25px;
+
+    height:
+        25px;
+
+    background:
+        rgba(30,40,28,.8);
+
+    color:
+        white;
+
+    cursor:
+        pointer;
+
+}
+
+.photo-picker-help {
+
+    color:
+        var(--muted);
+
+    font-size:
+        12px;
+
+}
 
 /* =========================================================
    ✿ INTERNAL LINKS
@@ -3592,6 +3713,34 @@ footer {
             oninput="handleEditorInput()">
         </div>
 
+        <div class="photo-picker">
+
+            <label
+                class="btn-small"
+                for="photoInput">
+
+                add photos
+
+            </label>
+
+            <input
+                class="photo-input"
+                id="photoInput"
+                type="file"
+                accept="image/*"
+                multiple>
+
+            <span class="photo-picker-help">
+                images only · max 5MB each · uploads when saved online
+            </span>
+
+            <div
+                class="photo-previews"
+                id="photoPreviews">
+            </div>
+
+        </div>
+
     </div>
 
 
@@ -4089,6 +4238,226 @@ if (!Array.isArray(deletedNoteIds))
 if (!Array.isArray(pendingNoteChanges))
     pendingNoteChanges = [];
 
+let selectedPhotoFiles = [];
+let removedPhotoPaths = [];
+
+const MAX_PHOTOS_PER_NOTE = 5;
+const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
+
+function notePhotos(note) {
+    return Array.isArray(note && note.photos)
+        ? note.photos.filter(
+            photo =>
+                photo &&
+                photo.id &&
+                photo.storagePath &&
+                photo.url
+        )
+        : [];
+}
+
+function revokePhotoPreviewUrls() {
+    selectedPhotoFiles.forEach(
+        item =>
+            URL.revokeObjectURL(item.previewUrl)
+    );
+}
+
+function renderPhotoPreviews() {
+    const area =
+        document.getElementById("photoPreviews");
+
+    if (!area)
+        return;
+
+    area.innerHTML = "";
+
+    selectedPhotoFiles.forEach(
+        (item, index) => {
+            const wrapper =
+                document.createElement("div");
+            wrapper.className = "photo-preview";
+
+            const image =
+                document.createElement("img");
+            image.src = item.previewUrl;
+            image.alt = item.file.name;
+
+            const remove =
+                document.createElement("button");
+            remove.type = "button";
+            remove.className = "photo-remove";
+            remove.textContent = "×";
+            remove.title = "remove photo";
+            remove.addEventListener(
+                "click",
+                () => {
+                    URL.revokeObjectURL(item.previewUrl);
+                    selectedPhotoFiles.splice(index, 1);
+                    renderPhotoPreviews();
+                }
+            );
+
+            wrapper.append(image, remove);
+            area.appendChild(wrapper);
+        }
+    );
+}
+
+function preparePhotoSelection(event) {
+    const files =
+        Array.from(event.target.files || []);
+    const currentNote =
+        notes.find(note => note.id === currentNoteId);
+    const existingCount =
+        notePhotos(currentNote).length -
+        removedPhotoPaths.length;
+
+    for (const file of files) {
+        if (!file.type.startsWith("image/")) {
+            setSyncStatus("Only image files can be attached");
+            continue;
+        }
+
+        if (file.size > MAX_PHOTO_SIZE) {
+            setSyncStatus(`${file.name} is larger than 5MB`);
+            continue;
+        }
+
+        if (
+            existingCount +
+            selectedPhotoFiles.length >=
+            MAX_PHOTOS_PER_NOTE
+        ) {
+            setSyncStatus("A note can contain up to 5 photos");
+            break;
+        }
+
+        selectedPhotoFiles.push({
+            file,
+            previewUrl: URL.createObjectURL(file)
+        });
+    }
+
+    event.target.value = "";
+    renderPhotoPreviews();
+}
+
+function loadEditorPhotos(note) {
+    revokePhotoPreviewUrls();
+    selectedPhotoFiles = [];
+    removedPhotoPaths = [];
+    renderPhotoPreviews();
+
+    const area =
+        document.getElementById("photoPreviews");
+
+    if (!area)
+        return;
+
+    notePhotos(note).forEach(
+        photo => {
+            const wrapper =
+                document.createElement("div");
+            wrapper.className = "photo-preview";
+
+            const image =
+                document.createElement("img");
+            image.src = photo.url;
+            image.alt = photo.name || "note photo";
+
+            const remove =
+                document.createElement("button");
+            remove.type = "button";
+            remove.className = "photo-remove";
+            remove.textContent = "×";
+            remove.title = "remove photo";
+            remove.addEventListener(
+                "click",
+                () => {
+                    removedPhotoPaths.push(
+                        photo.storagePath
+                    );
+                    wrapper.remove();
+                }
+            );
+
+            wrapper.append(image, remove);
+            area.appendChild(wrapper);
+        }
+    );
+}
+
+async function uploadPhotoFiles(noteId, items) {
+    const uploaded = [];
+
+    for (const item of items) {
+        const safeName =
+            item.file.name.replace(
+                /[^a-zA-Z0-9._-]/g,
+                "-"
+            );
+        const storagePath =
+            `${noteId}/${uid()}-${safeName}`;
+
+        const { error: uploadError } =
+            await supabaseClient
+                .storage
+                .from("note-photos")
+                .upload(
+                    storagePath,
+                    item.file,
+                    {
+                        upsert: false,
+                        contentType: item.file.type
+                    }
+                );
+
+        if (uploadError)
+            throw uploadError;
+
+        const { data, error: urlError } =
+            await supabaseClient
+                .storage
+                .from("note-photos")
+                .createSignedUrl(
+                    storagePath,
+                    60 * 60 * 24 * 30
+                );
+
+        if (urlError || !data || !data.signedUrl)
+            throw urlError || new Error("Could not sign photo URL");
+
+        uploaded.push({
+            id: uid(),
+            storagePath,
+            url: data.signedUrl,
+            name: item.file.name,
+            type: item.file.type,
+            size: item.file.size
+        });
+    }
+
+    return uploaded;
+}
+
+async function removeStoredPhotos(paths) {
+    const validPaths =
+        paths.filter(Boolean);
+
+    if (!validPaths.length || !navigator.onLine)
+        return;
+
+    const { error } =
+        await supabaseClient
+            .storage
+            .from("note-photos")
+            .remove(validPaths);
+
+    if (error)
+        console.error("Photo removal failed:", error);
+}
+
 function noteTimestamp(note) {
     const value = note && note.updated;
     const numeric = Number(value);
@@ -4156,7 +4525,18 @@ function queueNoteChange(action, note) {
 
 function mergeNotes(localNotes, remoteNotes) {
     const merged = new Map(
-        localNotes.map(note => [note.id, note])
+        localNotes.map(
+            note => [
+                note.id,
+                {
+                    ...note,
+                    photos:
+                        Array.isArray(note.photos)
+                            ? note.photos
+                            : []
+                }
+            ]
+        )
     );
 
     remoteNotes.forEach(remoteNote => {
@@ -4172,7 +4552,16 @@ function mergeNotes(localNotes, remoteNotes) {
             !localNote ||
             noteTimestamp(remoteNote) > noteTimestamp(localNote)
         )
-            merged.set(remoteNote.id, remoteNote);
+            merged.set(
+                remoteNote.id,
+                {
+                    ...remoteNote,
+                    photos:
+                        Array.isArray(remoteNote.photos)
+                            ? remoteNote.photos
+                            : []
+                }
+            );
     });
 
     return [...merged.values()];
@@ -4811,7 +5200,7 @@ function loadDraft() {
    ✿ NOTE MANAGEMENT
 ========================================================= */
 
-function saveCurrentNote() {
+async function saveCurrentNote() {
 
     const title =
         document
@@ -4832,6 +5221,68 @@ function saveCurrentNote() {
     )
         return;
 
+    const existingNote =
+        currentNoteId
+            ? notes.find(
+                note =>
+                    note.id === currentNoteId
+            )
+            : null;
+    const noteId =
+        existingNote
+            ? existingNote.id
+            : uid();
+    const existingPhotos =
+        notePhotos(existingNote).filter(
+            photo =>
+                !removedPhotoPaths.includes(
+                    photo.storagePath
+                )
+        );
+
+    if (
+        existingPhotos.length +
+        selectedPhotoFiles.length >
+        MAX_PHOTOS_PER_NOTE
+    ) {
+        setSyncStatus("A note can contain up to 5 photos");
+        return;
+    }
+
+    if (
+        selectedPhotoFiles.length &&
+        !navigator.onLine
+    ) {
+        setSyncStatus(
+            "Photo uploads need internet; text was not saved"
+        );
+        return;
+    }
+
+    let uploadedPhotos = [];
+
+    if (selectedPhotoFiles.length) {
+        setSyncStatus("Uploading photos...");
+
+        try {
+            uploadedPhotos =
+                await uploadPhotoFiles(
+                    noteId,
+                    selectedPhotoFiles
+                );
+        } catch (error) {
+            console.error("Photo upload failed:", error);
+            setSyncStatus(
+                "Photo upload failed; note not saved"
+            );
+            return;
+        }
+    }
+
+    const photos =
+        existingPhotos.concat(
+            uploadedPhotos
+        );
 
     if (currentNoteId) {
 
@@ -4850,6 +5301,9 @@ function saveCurrentNote() {
 
             note.content =
                 content;
+
+            note.photos =
+                photos;
 
             note.updated =
                 Date.now();
@@ -4870,6 +5324,9 @@ function saveCurrentNote() {
 
                 content:
                     content,
+
+                photos:
+                    photos,
 
                 pinned:
                     false,
@@ -4894,6 +5351,15 @@ function saveCurrentNote() {
         queueNoteChange("created", newNote);
     }
 
+    const pathsToRemove =
+        removedPhotoPaths.slice();
+
+    if (pathsToRemove.length)
+        removeStoredPhotos(pathsToRemove);
+
+    revokePhotoPreviewUrls();
+    selectedPhotoFiles = [];
+    removedPhotoPaths = [];
 
     addHistory();
 
@@ -4919,6 +5385,7 @@ function newNote() {
     currentNoteId =
         null;
 
+    loadEditorPhotos(null);
 
     document
         .getElementById(
@@ -4958,6 +5425,8 @@ function openNote(id) {
 
     currentNoteId =
         note.id;
+
+    loadEditorPhotos(note);
 
 
     document
@@ -5015,6 +5484,13 @@ function deleteNoteById(id) {
     }
 
     queueNoteChange("deleted", target);
+
+    removeStoredPhotos(
+        notePhotos(target).map(
+            photo =>
+                photo.storagePath
+        )
+    );
 
 
     notes =
@@ -5657,6 +6133,49 @@ function renderNotes() {
                 content
             );
 
+            if (notePhotos(note).length) {
+                const gallery =
+                    document.createElement("div");
+                gallery.className =
+                    "note-photo-gallery";
+
+                notePhotos(note).forEach(
+                    photo => {
+                        const figure =
+                            document.createElement("div");
+                        figure.className =
+                            "note-photo";
+
+                        const image =
+                            document.createElement("img");
+                        image.src = photo.url;
+                        image.alt =
+                            photo.name || "note photo";
+                        image.loading = "lazy";
+                        image.addEventListener(
+                            "error",
+                            async () => {
+                                const { data } =
+                                    await supabaseClient
+                                        .storage
+                                        .from("note-photos")
+                                        .createSignedUrl(
+                                            photo.storagePath,
+                                            60 * 60 * 24 * 30
+                                        );
+                                if (data && data.signedUrl)
+                                    image.src = data.signedUrl;
+                            }
+                        );
+
+                        figure.appendChild(image);
+                        gallery.appendChild(figure);
+                    }
+                );
+
+                content.appendChild(gallery);
+            }
+
 
             div.addEventListener(
                 "dblclick",
@@ -5959,6 +6478,9 @@ function captureQuickNote() {
 
         content:
             content,
+
+        photos:
+            [],
 
         pinned:
             false,
@@ -8461,7 +8983,6 @@ document.addEventListener(
 ========================================================= */
 
 if (
-
     localStorage.getItem(
         "theme"
     )
@@ -8478,6 +8999,14 @@ if (
 
 }
 
+document
+    .getElementById("photoInput")
+    .addEventListener(
+        "change",
+        preparePhotoSelection
+    );
+
+loadEditorPhotos(null);
 loadDraft();
 renderNotes();
 renderMiniNotes();
