@@ -2765,6 +2765,19 @@ h1 {
 
 }
 
+.trash-can.dragging {
+
+    filter:
+        drop-shadow(
+            0 10px 12px
+            rgba(0,0,0,.24)
+        );
+
+    opacity:
+        .94;
+
+}
+
 .trash-can.is-hover .trash-can-lid {
 
     transform:
@@ -7882,6 +7895,15 @@ function setupTrashCan() {
     let isDragging =
         false;
 
+    let hasMoved =
+        false;
+
+    let startX =
+        0;
+
+    let startY =
+        0;
+
 
     let offsetX =
         0;
@@ -7890,6 +7912,87 @@ function setupTrashCan() {
     let offsetY =
         0;
 
+    const storageKey =
+        "trashCanPosition";
+
+    const field =
+        document.getElementById(
+            "meadow"
+        );
+
+    function getClampedPosition(x, y) {
+        const maxX =
+            Math.max(
+                0,
+                field.clientWidth -
+                trash.offsetWidth
+            );
+
+        const maxY =
+            Math.max(
+                0,
+                field.clientHeight -
+                trash.offsetHeight
+            );
+
+        return {
+            x: Math.max(0, Math.min(x, maxX)),
+            y: Math.max(0, Math.min(y, maxY))
+        };
+    }
+
+    function applyPosition(position) {
+        const clamped =
+            getClampedPosition(
+                Number(position.x),
+                Number(position.y)
+            );
+
+        trash.style.left =
+            clamped.x + "px";
+
+        trash.style.top =
+            clamped.y + "px";
+
+        trash.style.right =
+            "auto";
+
+        trash.style.bottom =
+            "auto";
+
+        localStorage.setItem(
+            storageKey,
+            JSON.stringify(clamped)
+        );
+    }
+
+    function restorePosition() {
+        const saved =
+            JSON.parse(
+                localStorage.getItem(storageKey)
+            );
+
+        if (
+            !saved ||
+            !Number.isFinite(Number(saved.x)) ||
+            !Number.isFinite(Number(saved.y))
+        )
+            return;
+
+        applyPosition(saved);
+    }
+
+    function clampSavedPosition() {
+        const saved =
+            JSON.parse(
+                localStorage.getItem(storageKey)
+            );
+
+        if (saved)
+            applyPosition(saved);
+    }
+
+    restorePosition();
 
     trash.addEventListener(
         "pointerdown",
@@ -7914,20 +8017,11 @@ function setupTrashCan() {
             isDragging =
                 true;
 
-
-            const field =
-                document.getElementById(
-                    "meadow"
-                );
-
+            hasMoved =
+                false;
 
             const rect =
                 trash.getBoundingClientRect();
-
-
-            const fieldRect =
-                field.getBoundingClientRect();
-
 
             offsetX =
                 e.clientX -
@@ -7938,18 +8032,14 @@ function setupTrashCan() {
                 e.clientY -
                 rect.top;
 
+            startX =
+                e.clientX;
+
+            startY =
+                e.clientY;
 
             trash.style.zIndex =
                 "120";
-
-            trash.style.right =
-                "auto";
-
-            trash.style.bottom =
-                "auto";
-
-            trash.style.cursor =
-                "grabbing";
 
             trash.setPointerCapture(
                 e.pointerId
@@ -7966,15 +8056,21 @@ function setupTrashCan() {
             if (!isDragging)
                 return;
 
+            if (
+                !hasMoved &&
+                Math.hypot(
+                    e.clientX - startX,
+                    e.clientY - startY
+                ) < 4
+            )
+                return;
 
             e.preventDefault();
-
-
-            const field =
-                document.getElementById(
-                    "meadow"
-                );
-
+            hasMoved = true;
+            trash.classList.add("dragging");
+            trash.style.cursor = "grabbing";
+            trash.style.right = "auto";
+            trash.style.bottom = "auto";
 
             const fieldRect =
                 field.getBoundingClientRect();
@@ -7992,47 +8088,14 @@ function setupTrashCan() {
                 offsetY;
 
 
-            const maxX =
-                Math.max(
-                    0,
-                    field.clientWidth -
-                    trash.offsetWidth
-                );
-
-
-            const maxY =
-                Math.max(
-                    0,
-                    field.clientHeight -
-                    trash.offsetHeight
-                );
-
-
-            x =
-                Math.max(
-                    0,
-                    Math.min(
-                        x,
-                        maxX
-                    )
-                );
-
-
-            y =
-                Math.max(
-                    0,
-                    Math.min(
-                        y,
-                        maxY
-                    )
-                );
-
+            const position =
+                getClampedPosition(x, y);
 
             trash.style.left =
-                x + "px";
+                position.x + "px";
 
             trash.style.top =
-                y + "px";
+                position.y + "px";
 
         }
     );
@@ -8047,6 +8110,18 @@ function setupTrashCan() {
         isDragging =
             false;
 
+        if (hasMoved) {
+            localStorage.setItem(
+                storageKey,
+                JSON.stringify({
+                    x: parseFloat(trash.style.left),
+                    y: parseFloat(trash.style.top)
+                })
+            );
+        }
+
+        hasMoved =
+            false;
 
         trash.style.cursor =
             "pointer";
@@ -8054,6 +8129,9 @@ function setupTrashCan() {
         trash.style.zIndex =
             "80";
 
+        trash.classList.remove(
+            "dragging"
+        );
 
         if (
             e &&
@@ -8082,6 +8160,11 @@ function setupTrashCan() {
     trash.addEventListener(
         "pointercancel",
         stopDragging
+    );
+
+    window.addEventListener(
+        "resize",
+        clampSavedPosition
     );
 
 
