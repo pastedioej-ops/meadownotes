@@ -4387,8 +4387,7 @@ function notePhotos(note) {
             photo =>
                 photo &&
                 photo.id &&
-                photo.storagePath &&
-                photo.url
+                photo.storagePath
         )
         : [];
 }
@@ -4700,7 +4699,7 @@ function mergeNotes(localNotes, remoteNotes) {
                     photos:
                         Array.isArray(remoteNote.photos)
                             ? remoteNote.photos
-                            : []
+                            : (localNote?.photos || [])
                 }
             );
     });
@@ -4774,8 +4773,7 @@ async function loadCloudNotes() {
 
         if (
             !changeState ||
-            !Array.isArray(changeState.photos) ||
-            noteTimestamp(changeState) < noteTimestamp(note)
+            !Array.isArray(changeState.photos)
         )
             return note;
 
@@ -5517,7 +5515,7 @@ async function saveCurrentNote() {
             {
 
                 id:
-                    uid(),
+                    noteId,
 
                 title:
                     title,
@@ -6372,6 +6370,18 @@ function renderNotes() {
                                     image.src = data.signedUrl;
                             }
                         );
+
+                        supabaseClient
+                            .storage
+                            .from("note-photos")
+                            .createSignedUrl(
+                                photo.storagePath,
+                                60 * 60 * 24 * 30
+                            )
+                            .then(({ data }) => {
+                                if (data && data.signedUrl)
+                                    image.src = data.signedUrl;
+                            });
 
                         figure.appendChild(image);
                         gallery.appendChild(figure);
