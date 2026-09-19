@@ -4747,9 +4747,7 @@ async function syncPendingNoteChanges() {
     for (let index = 0; index < pendingNoteChanges.length;) {
         const { error } = await supabaseClient
             .from("note_changes")
-            .upsert(pendingNoteChanges[index], {
-                onConflict: "id"
-            });
+            .insert(pendingNoteChanges[index]);
 
         if (error) {
             console.error("Note history sync failed:", error);
@@ -4808,7 +4806,12 @@ async function syncToSupabase() {
     }
 
     const payloadNotes = notes.map(note => ({
-        ...note,
+        id: note.id,
+        title: note.title,
+        content: note.content,
+        pinned: note.pinned,
+        created: note.created,
+        updated: note.updated,
         user_id: null
     }));
 
@@ -4817,7 +4820,8 @@ async function syncToSupabase() {
         .upsert(payloadNotes);
 
     if (error) {
-        queueSync("Sync failed — retrying", false);
+    console.error("SUPABASE NOTES UPSERT ERROR:", error, payloadNotes);
+    queueSync("Sync failed — retrying", false);
         syncInFlight = false;
         return;
     }
