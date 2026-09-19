@@ -4720,6 +4720,11 @@ async function loadCloudNotes() {
         .select("*")
         .is("user_id", null);
 
+    const { data: noteChanges, error: changesError } =
+        await supabaseClient
+            .from("note_changes")
+            .select("note_id, action, changed_at, note_state");
+
     cloudLoadInFlight = false;
 
     if (error) {
@@ -4728,7 +4733,57 @@ async function loadCloudNotes() {
         return;
     }
 
-    const merged = mergeNotes(notes, data || []);
+    if (changesError)
+        console.error("Could not load note change history:", changesError);
+
+    const latestChanges = new Map();
+
+    (noteChanges || []).forEach(change => {
+        if (!change.note_id)
+            return;
+
+        const previous = latestChanges.get(change.note_id);
+        const changeTime = Date.parse(change.changed_at || "");
+        const previousTime = previous
+            ? Date.parse(previous.changed_at || "")
+            : -Infinity;
+
+        if (!previous || changeTime >= previousTime)
+            latestChanges.set(change.note_id, change);
+    });
+
+    const historyDeletedIds = [...latestChanges.values()]
+        .filter(change => change.action === "deleted")
+        .map(change => change.note_id);
+
+    if (historyDeletedIds.length) {
+        deletedNoteIds = [
+            ...new Set(
+                deletedNoteIds.concat(historyDeletedIds)
+            )
+        ];
+        localStorage.setItem(
+            "deletedNoteIds",
+            JSON.stringify(deletedNoteIds)
+        );
+    }
+
+    const merged = mergeNotes(notes, data || []).map(note => {
+        const latestChange = latestChanges.get(note.id);
+        const changeState = latestChange && latestChange.note_state;
+
+        if (
+            !changeState ||
+            !Array.isArray(changeState.photos) ||
+            noteTimestamp(changeState) < noteTimestamp(note)
+        )
+            return note;
+
+        return {
+            ...note,
+            photos: changeState.photos
+        };
+    });
 
     if (JSON.stringify(merged) !== JSON.stringify(notes)) {
         notes = merged;
