@@ -3575,6 +3575,456 @@ footer {
 ========================================================= */
 
 
+
+
+/* =========================================================
+   ✿ MARY — HIDDEN LETTER EXPERIENCE
+========================================================= */
+
+.mary-entry-point {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    margin-top: 18px;
+    padding: 11px 13px;
+    border: 1px solid rgba(72,102,64,.22);
+    border-radius: 12px;
+    background: rgba(255,253,248,.42);
+    color: var(--dark-green);
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: .03em;
+    cursor: pointer;
+    transition: transform .2s ease, background .2s ease, border-color .2s ease;
+}
+
+.mary-entry-point:hover {
+    transform: translateY(-1px);
+    background: rgba(255,253,248,.70);
+    border-color: rgba(72,102,64,.38);
+}
+
+body.dark .mary-entry-point {
+    background: rgba(23,39,31,.56);
+    border-color: rgba(195,229,182,.20);
+}
+
+body.dark .mary-entry-point:hover {
+    background: rgba(23,39,31,.82);
+    border-color: rgba(195,229,182,.34);
+}
+
+.mary-entry-point .mary-entry-icon {
+    opacity: .72;
+    font-size: 15px;
+}
+
+body.mary-is-open {
+    overflow: hidden;
+}
+
+.mary-experience {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    overflow: auto;
+    background: #07120f;
+    color: #edf3df;
+}
+
+.mary-experience.is-open {
+    display: block;
+    animation: maryFadeIn .45s ease both;
+}
+
+.mary-night-sky {
+    position: relative;
+    min-height: 100%;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 26%, rgba(105,142,91,.20), transparent 30%),
+        radial-gradient(circle at 18% 15%, rgba(213,229,180,.08), transparent 22%),
+        linear-gradient(160deg, #091712 0%, #10251a 54%, #173222 100%);
+}
+
+.mary-night-sky::before,
+.mary-night-sky::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.mary-night-sky::before {
+    opacity: .55;
+    background-image:
+        radial-gradient(circle, rgba(236,242,202,.72) 0 1px, transparent 1.7px),
+        radial-gradient(circle, rgba(198,224,175,.44) 0 1px, transparent 1.6px);
+    background-size: 97px 113px, 151px 139px;
+    background-position: 11px 17px, 47px 71px;
+}
+
+.mary-night-sky::after {
+    background:
+        linear-gradient(to bottom, rgba(4,11,8,.12), transparent 38%, rgba(3,10,7,.30));
+}
+
+.mary-scene {
+    position: relative;
+    z-index: 2;
+    box-sizing: border-box;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 72px 24px 64px;
+}
+
+.mary-moon {
+    position: absolute;
+    top: 9vh;
+    right: 12vw;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(229,236,202,.88);
+    box-shadow: 0 0 44px rgba(202,223,173,.18);
+}
+
+.mary-moon::after {
+    content: "";
+    position: absolute;
+    width: 72px;
+    height: 72px;
+    top: -7px;
+    left: -10px;
+    border-radius: 50%;
+    background: #0b1913;
+}
+
+.mary-hill {
+    position: absolute;
+    left: -8%;
+    right: -8%;
+    bottom: -12vh;
+    height: 28vh;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    background: #0a1a12;
+    box-shadow: 0 -20px 60px rgba(10,27,18,.30);
+}
+
+.mary-corner-animal {
+    position: absolute;
+    z-index: 3;
+    opacity: .54;
+    filter: saturate(.55);
+    font-size: 26px;
+    user-select: none;
+}
+
+.mary-cat {
+    left: 9vw;
+    bottom: 13vh;
+}
+
+.mary-dog {
+    right: 9vw;
+    bottom: 10vh;
+    font-size: 23px;
+}
+
+.mary-firefly {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #dce8ad;
+    box-shadow: 0 0 12px rgba(220,232,173,.70);
+    opacity: .68;
+    animation: maryFirefly 4.8s ease-in-out infinite;
+}
+
+.mary-firefly.f1 { left: 19%; top: 28%; animation-delay: .2s; }
+.mary-firefly.f2 { left: 74%; top: 34%; animation-delay: 1.2s; }
+.mary-firefly.f3 { left: 64%; top: 18%; animation-delay: 2.1s; }
+.mary-firefly.f4 { left: 31%; top: 67%; animation-delay: 3s; }
+
+.mary-envelope-wrap {
+    position: relative;
+    z-index: 5;
+    width: min(430px, 92vw);
+    text-align: center;
+    transition: opacity .35s ease, transform .35s ease;
+}
+
+.mary-envelope-wrap.is-hidden {
+    opacity: 0;
+    transform: translateY(12px) scale(.98);
+    pointer-events: none;
+    position: absolute;
+}
+
+.mary-envelope {
+    position: relative;
+    width: min(360px, 82vw);
+    aspect-ratio: 1.48 / 1;
+    margin: 0 auto 26px;
+    border-radius: 4px 4px 9px 9px;
+    background: #d8c9a6;
+    box-shadow:
+        0 24px 65px rgba(0,0,0,.34),
+        0 3px 0 rgba(255,255,255,.10) inset;
+    cursor: pointer;
+    transform: rotate(-1.2deg);
+}
+
+.mary-envelope::before,
+.mary-envelope::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    pointer-events: none;
+}
+
+.mary-envelope::before {
+    clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
+    background: #cbb98e;
+}
+
+.mary-envelope::after {
+    clip-path: polygon(0 100%, 50% 47%, 100% 100%);
+    background: rgba(104,87,57,.15);
+}
+
+.mary-envelope-flap {
+    position: absolute;
+    z-index: 3;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 62%;
+    clip-path: polygon(0 0, 100% 0, 50% 82%);
+    background: #e1d2b0;
+    transform-origin: 50% 0;
+    transition: transform .65s cubic-bezier(.2,.75,.25,1);
+}
+
+.mary-envelope.is-open .mary-envelope-flap {
+    transform: rotateX(180deg);
+}
+
+.mary-envelope-seal {
+    position: absolute;
+    z-index: 4;
+    left: 50%;
+    top: 50%;
+    width: 50px;
+    height: 50px;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #526d4c;
+    color: #e8e3c8;
+    font-family: Georgia, serif;
+    font-size: 18px;
+    box-shadow: 0 4px 15px rgba(45,54,35,.24);
+    transition: opacity .35s ease, transform .45s ease;
+}
+
+.mary-envelope.is-open .mary-envelope-seal {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(.82);
+}
+
+.mary-envelope-label {
+    position: absolute;
+    z-index: 5;
+    left: 50%;
+    bottom: 25%;
+    transform: translateX(-50%);
+    color: rgba(67,67,49,.72);
+    font-family: Georgia, serif;
+    font-size: 13px;
+    letter-spacing: .10em;
+    text-transform: lowercase;
+}
+
+.mary-open-hint {
+    color: rgba(225,235,211,.72);
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: lowercase;
+}
+
+.mary-letter {
+    position: relative;
+    z-index: 6;
+    width: min(650px, 92vw);
+    box-sizing: border-box;
+    max-height: calc(100vh - 100px);
+    overflow: auto;
+    padding: clamp(34px, 6vw, 66px) clamp(28px, 7vw, 78px);
+    border: 1px solid rgba(87,99,63,.35);
+    border-radius: 3px;
+    background:
+        linear-gradient(rgba(255,250,228,.88), rgba(246,239,209,.96)),
+        #f6efd1;
+    color: #3f4d3a;
+    box-shadow:
+        0 30px 80px rgba(0,0,0,.36),
+        0 2px 0 rgba(255,255,255,.65) inset;
+    opacity: 0;
+    transform: translateY(18px) scale(.985);
+    pointer-events: none;
+    transition: opacity .5s ease, transform .5s ease;
+}
+
+.mary-letter.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.mary-letter::before {
+    content: "";
+    position: absolute;
+    inset: 15px;
+    border: 1px solid rgba(72,102,64,.12);
+    pointer-events: none;
+}
+
+.mary-letter-kicker {
+    margin: 0 0 22px;
+    color: #6d7f62;
+    font-family: Georgia, serif;
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: lowercase;
+}
+
+.mary-letter h2 {
+    margin: 0 0 28px;
+    color: #40533c;
+    font-family: Georgia, serif;
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 400;
+    letter-spacing: -.02em;
+}
+
+.mary-letter-copy {
+    position: relative;
+    z-index: 1;
+    font-family: Georgia, serif;
+    font-size: 16px;
+    line-height: 1.9;
+}
+
+.mary-letter-copy p {
+    margin: 0 0 18px;
+}
+
+.mary-letter-signoff {
+    margin-top: 34px;
+    font-family: Georgia, serif;
+    font-style: italic;
+    color: #5f7355;
+}
+
+.mary-ending {
+    margin: 36px 0 0;
+    padding-top: 22px;
+    border-top: 1px solid rgba(72,102,64,.18);
+    color: #4c6245;
+    font-family: Georgia, serif;
+    font-size: 15px;
+    letter-spacing: .04em;
+}
+
+.mary-close {
+    position: absolute;
+    z-index: 4;
+    top: 19px;
+    right: 21px;
+    border: 0;
+    background: transparent;
+    color: #5c6d55;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: .72;
+}
+
+.mary-close:hover {
+    opacity: 1;
+}
+
+body.dark .mary-letter {
+    background: linear-gradient(rgba(28,42,31,.97), rgba(23,37,28,.98));
+    color: #dce9d5;
+    border-color: rgba(194,216,179,.18);
+}
+
+body.dark .mary-letter h2,
+body.dark .mary-ending {
+    color: #cfe1c6;
+}
+
+body.dark .mary-letter-kicker,
+body.dark .mary-letter-signoff,
+body.dark .mary-close {
+    color: #a9c19f;
+}
+
+body.dark .mary-letter::before {
+    border-color: rgba(194,216,179,.10);
+}
+
+@keyframes maryFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes maryFirefly {
+    0%, 100% { transform: translate3d(0, 0, 0); opacity: .28; }
+    50% { transform: translate3d(8px, -12px, 0); opacity: .82; }
+}
+
+@media (max-width: 600px) {
+    .mary-scene {
+        padding: 58px 14px 44px;
+    }
+
+    .mary-moon {
+        top: 7vh;
+        right: 10vw;
+        width: 52px;
+        height: 52px;
+    }
+
+    .mary-moon::after {
+        width: 52px;
+        height: 52px;
+    }
+
+    .mary-letter {
+        max-height: calc(100vh - 64px);
+        padding: 38px 25px 44px;
+    }
+
+    .mary-letter::before {
+        inset: 10px;
+    }
+
+    .mary-letter-copy {
+        font-size: 15px;
+        line-height: 1.8;
+    }
+}
+
 </style>
 
 </head>
@@ -3755,6 +4205,17 @@ footer {
         </div>
 
     </div>
+
+    <button
+        class="mary-entry-point"
+        type="button"
+        onclick="openMaryExperience()"
+        aria-label="Open a little letter left here">
+
+        <span>✉ a letter left here</span>
+        <span class="mary-entry-icon">⌁</span>
+
+    </button>
 
 </aside>
 
@@ -4345,6 +4806,114 @@ footer {
 
 </div>
 
+
+<!-- =====================================================
+     MARY — HIDDEN LETTER EXPERIENCE
+===================================================== -->
+
+<div
+    class="mary-experience"
+    id="maryExperience"
+    aria-hidden="true">
+
+    <div class="mary-night-sky">
+
+        <div class="mary-moon" aria-hidden="true"></div>
+        <div class="mary-hill" aria-hidden="true"></div>
+
+        <span class="mary-firefly f1" aria-hidden="true"></span>
+        <span class="mary-firefly f2" aria-hidden="true"></span>
+        <span class="mary-firefly f3" aria-hidden="true"></span>
+        <span class="mary-firefly f4" aria-hidden="true"></span>
+
+        <div class="mary-scene">
+
+            <span class="mary-corner-animal mary-cat" aria-hidden="true">🐈</span>
+            <span class="mary-corner-animal mary-dog" aria-hidden="true">🐕</span>
+
+            <div
+                class="mary-envelope-wrap"
+                id="maryEnvelopeWrap">
+
+                <div
+                    class="mary-envelope"
+                    id="maryEnvelope"
+                    role="button"
+                    tabindex="0"
+                    aria-label="Open the sealed letter">
+
+                    <div class="mary-envelope-flap"></div>
+
+                    <div class="mary-envelope-seal">M</div>
+
+                    <div class="mary-envelope-label">
+                        for mary
+                    </div>
+
+                </div>
+
+                <div class="mary-open-hint">
+                    click the seal to open
+                </div>
+
+            </div>
+
+            <article
+                class="mary-letter"
+                id="maryLetter"
+                aria-hidden="true">
+
+                <button
+                    class="mary-close"
+                    type="button"
+                    onclick="closeMaryExperience()">
+
+                    close letter
+
+                </button>
+
+                <p class="mary-letter-kicker">
+                    a little place inside the archive
+                </p>
+
+                <h2>
+                    for mary
+                </h2>
+
+                <div class="mary-letter-copy">
+
+                    <p>
+                        if you found this, then i suppose you were looking in the right places.
+                    </p>
+
+                    <p>
+                        nothing particularly dramatic is hiding here. just a quiet little corner,
+                        kept warm and green, with a few things that felt worth leaving somewhere.
+                    </p>
+
+                    <p>
+                        you can stay for a while. there is no big reveal. no ceremony. just this
+                        small letter, sitting here because it seemed nicer than leaving it unsaid.
+                    </p>
+
+                    <p class="mary-letter-signoff">
+                        — from the archive
+                    </p>
+
+                    <p class="mary-ending">
+                        good night, kekekeyomi.
+                    </p>
+
+                </div>
+
+            </article>
+
+        </div>
+
+    </div>
+
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -4659,6 +5228,34 @@ function queueNoteChange(action, note) {
     );
 }
 
+/* =========================================================
+   ✿ PHASE 1.5A DEV TEST HOOK — REMOVE IN PHASE 1.5B
+   Data-layer only. Not wired to any UI/button.
+   Console usage: __markNoteAsMary("<noteId>")
+========================================================= */
+function __markNoteAsMary(noteId) {
+    const note = notes.find(n => n.id === noteId);
+
+    if (!note) {
+        console.warn("[mary-test] note not found:", noteId);
+        return false;
+    }
+
+    note.isMary = true;
+    note.updated = Date.now();
+
+    queueNoteChange("edited", note);
+    saveStorage();
+    renderNotes();
+    renderMiniNotes();
+    syncToSupabase();
+
+    console.info("[mary-test] isMary:true set for", noteId);
+    return true;
+}
+window.__markNoteAsMary = __markNoteAsMary;
+/* ✿ END PHASE 1.5A DEV TEST HOOK */
+
 function mergeNotes(localNotes, remoteNotes) {
     const merged = new Map(
         localNotes.map(
@@ -4699,7 +5296,8 @@ function mergeNotes(localNotes, remoteNotes) {
                     photos:
                         Array.isArray(remoteNote.photos)
                             ? remoteNote.photos
-                            : (localNote?.photos || [])
+                            : (localNote?.photos || []),
+                    ...(localNote?.isMary ? { isMary: true } : {})
                 }
             );
     });
@@ -4771,16 +5369,18 @@ async function loadCloudNotes() {
         const latestChange = latestChanges.get(note.id);
         const changeState = latestChange && latestChange.note_state;
 
-        if (
-            !changeState ||
-            !Array.isArray(changeState.photos)
-        )
+        if (!changeState)
             return note;
 
-        return {
-            ...note,
-            photos: changeState.photos
-        };
+        const restored = { ...note };
+
+        if (Array.isArray(changeState.photos))
+            restored.photos = changeState.photos;
+
+        if (changeState.isMary === true)
+            restored.isMary = true;
+
+        return restored;
     });
 
     if (JSON.stringify(merged) !== JSON.stringify(notes)) {
@@ -5533,7 +6133,10 @@ async function saveCurrentNote() {
                     Date.now(),
 
                 updated:
-                    Date.now()
+                    Date.now(),
+
+                isMary:
+                    false
 
             };
 
@@ -6572,12 +7175,160 @@ function renderMiniNotes() {
 
 
 /* =========================================================
-   ✿ BI-DIRECTIONAL LINKS
+   ✿ MARY — HIDDEN LETTER EXPERIENCE
 ========================================================= */
+
+let maryExperienceOpen = false;
+let maryLetterOpen = false;
+
+function openMaryExperience() {
+
+    const experience =
+        document.getElementById("maryExperience");
+
+    const envelope =
+        document.getElementById("maryEnvelope");
+
+    const envelopeWrap =
+        document.getElementById("maryEnvelopeWrap");
+
+    const letter =
+        document.getElementById("maryLetter");
+
+    if (!experience || !envelope || !envelopeWrap || !letter)
+        return;
+
+    maryExperienceOpen = true;
+    maryLetterOpen = false;
+
+    experience.classList.add("is-open");
+    experience.setAttribute("aria-hidden", "false");
+    envelope.classList.remove("is-open");
+    envelopeWrap.classList.remove("is-hidden");
+    letter.classList.remove("is-visible");
+    letter.setAttribute("aria-hidden", "true");
+
+    document.body.classList.add("mary-is-open");
+
+    window.setTimeout(
+        () => envelope.focus(),
+        50
+    );
+}
+
+function openMaryLetter() {
+
+    if (!maryExperienceOpen)
+        return;
+
+    const envelope =
+        document.getElementById("maryEnvelope");
+
+    const envelopeWrap =
+        document.getElementById("maryEnvelopeWrap");
+
+    const letter =
+        document.getElementById("maryLetter");
+
+    if (!envelope || !envelopeWrap || !letter)
+        return;
+
+    maryLetterOpen = true;
+
+    envelope.classList.add("is-open");
+
+    window.setTimeout(
+        () => {
+            envelopeWrap.classList.add("is-hidden");
+            letter.classList.add("is-visible");
+            letter.setAttribute("aria-hidden", "false");
+        },
+        360
+    );
+}
+
+function closeMaryExperience() {
+
+    const experience =
+        document.getElementById("maryExperience");
+
+    const envelope =
+        document.getElementById("maryEnvelope");
+
+    const envelopeWrap =
+        document.getElementById("maryEnvelopeWrap");
+
+    const letter =
+        document.getElementById("maryLetter");
+
+    if (!experience || !envelope || !envelopeWrap || !letter)
+        return;
+
+    maryExperienceOpen = false;
+    maryLetterOpen = false;
+
+    letter.classList.remove("is-visible");
+    letter.setAttribute("aria-hidden", "true");
+
+    envelope.classList.remove("is-open");
+    envelopeWrap.classList.remove("is-hidden");
+
+    experience.classList.remove("is-open");
+    experience.setAttribute("aria-hidden", "true");
+
+    document.body.classList.remove("mary-is-open");
+}
+
+function handleMaryKeydown(event) {
+
+    if (!maryExperienceOpen)
+        return;
+
+    if (
+        event.key === "Enter" ||
+        event.key === " "
+    ) {
+
+        const active =
+            document.activeElement;
+
+        if (
+            active &&
+            active.id === "maryEnvelope"
+        ) {
+
+            event.preventDefault();
+            openMaryLetter();
+
+        }
+
+        return;
+    }
+
+    if (event.key === "Escape") {
+
+        event.preventDefault();
+        closeMaryExperience();
+
+    }
+
+}
 
 function openLinkedNote(
     title
 ) {
+
+    const normalizedTitle =
+        String(title || "")
+            .trim()
+            .toLowerCase();
+
+    if (normalizedTitle === "mary") {
+
+        openMaryExperience();
+        return;
+
+    }
 
     const note =
         notes.find(
@@ -6712,7 +7463,10 @@ function captureQuickNote() {
             Date.now(),
 
         updated:
-            Date.now()
+            Date.now(),
+
+        isMary:
+            false
 
     };
 
@@ -9497,6 +10251,42 @@ document
         "change",
         preparePhotoSelection
     );
+
+const maryEnvelope =
+    document.getElementById("maryEnvelope");
+
+if (maryEnvelope) {
+
+    maryEnvelope.addEventListener(
+        "click",
+        openMaryLetter
+    );
+
+    maryEnvelope.addEventListener(
+        "keydown",
+        handleMaryKeydown
+    );
+
+}
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Escape" &&
+            maryExperienceOpen
+        ) {
+
+            event.preventDefault();
+            closeMaryExperience();
+            return;
+
+        }
+
+    },
+    true
+);
 
 loadEditorPhotos(null);
 loadDraft();
