@@ -4382,6 +4382,72 @@ body.dark .mary-link-btn {
     color: #a9c19f;
 }
 
+/* Enclosures inside the physical letter — understated, part of the paper.
+   Scoped to the Mary reader only; global .attachment-* rules are untouched. */
+.mary-reader-attachments {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+    gap: 12px;
+    margin-top: 34px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(72,102,64,.18);
+}
+
+.mary-reader-attachments[hidden] {
+    display: none;
+}
+
+.mary-reader-attachments::before {
+    content: "enclosed";
+    grid-column: 1 / -1;
+    margin-bottom: -2px;
+    color: #6d7f62;
+    font-family: Georgia, serif;
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: lowercase;
+    opacity: .8;
+}
+
+.mary-reader-attachments .attachment-item > img,
+.mary-reader-attachments .attachment-item > video {
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.12);
+}
+
+.mary-reader-attachments .attachment-card {
+    background: rgba(255,255,255,.34);
+    border: 1px solid rgba(87,99,63,.28);
+    border-radius: 5px;
+    color: #3f4d3a;
+}
+
+.mary-reader-attachments .attachment-card-icon,
+.mary-reader-attachments .attachment-card-meta {
+    color: #6d7f62;
+}
+
+body.dark .mary-reader-attachments {
+    border-top-color: rgba(194,216,179,.16);
+}
+
+body.dark .mary-reader-attachments::before {
+    color: #9fb795;
+}
+
+body.dark .mary-reader-attachments .attachment-card {
+    background: rgba(255,255,255,.05);
+    border-color: rgba(194,216,179,.2);
+    color: #dce9d5;
+}
+
+body.dark .mary-reader-attachments .attachment-card-icon,
+body.dark .mary-reader-attachments .attachment-card-meta {
+    color: #9fb795;
+}
+
 </style>
 
 </head>
@@ -5311,6 +5377,12 @@ body.dark .mary-link-btn {
                     <div
                         class="mary-letter-copy"
                         id="maryReaderBody">
+                    </div>
+
+                    <div
+                        class="mary-reader-attachments"
+                        id="maryReaderAttachments"
+                        hidden>
                     </div>
 
                 </article>
@@ -8460,6 +8532,36 @@ function openMaryReader(id) {
         body.appendChild(
             renderStoredContent(note.content || "")
         );
+
+    }
+
+    /* Enclosures: reuse the one generic attachment system (note.photos[] →
+       notePhotos → renderAttachment → resolveAttachmentUrl/IndexedDB). The
+       reader never mutates attachment data; it only renders it. */
+    const attachments =
+        document.getElementById("maryReaderAttachments");
+
+    if (attachments) {
+
+        attachments.innerHTML = "";
+
+        const photos = notePhotos(note);
+
+        if (photos.length) {
+
+            photos.forEach(photo => {
+                attachments.appendChild(
+                    renderAttachment(photo)
+                );
+            });
+
+            attachments.hidden = false;
+
+        } else {
+
+            attachments.hidden = true;
+
+        }
 
     }
 
