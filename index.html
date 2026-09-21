@@ -1322,6 +1322,169 @@ h1 {
 
 }
 
+.attachment-item {
+
+    position:
+        relative;
+
+    display:
+        flex;
+
+    align-items:
+        stretch;
+
+    min-width:
+        0;
+
+}
+
+.attachment-item > img,
+.attachment-item > video {
+
+    display:
+        block;
+
+    width:
+        100%;
+
+    aspect-ratio:
+        1;
+
+    object-fit:
+        cover;
+
+    border-radius:
+        12px;
+
+}
+
+.attachment-item > audio {
+
+    width:
+        100%;
+
+}
+
+.attachment-card {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        6px;
+
+    width:
+        100%;
+
+    min-height:
+        96px;
+
+    padding:
+        10px;
+
+    box-sizing:
+        border-box;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        12px;
+
+    background:
+        var(--editor-bg);
+
+}
+
+.attachment-card-icon {
+
+    font-size:
+        11px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        .08em;
+
+    color:
+        var(--muted);
+
+}
+
+.attachment-card-name {
+
+    font-size:
+        12px;
+
+    line-height:
+        1.3;
+
+    word-break:
+        break-all;
+
+    max-height:
+        3.9em;
+
+    overflow:
+        hidden;
+
+}
+
+.attachment-card-meta {
+
+    font-size:
+        11px;
+
+    color:
+        var(--muted);
+
+    word-break:
+        break-all;
+
+}
+
+.attachment-card-actions {
+
+    display:
+        flex;
+
+    gap:
+        6px;
+
+    margin-top:
+        auto;
+
+}
+
+.attachment-card-actions button {
+
+    font-size:
+        11px;
+
+    padding:
+        4px 8px;
+
+    border-radius:
+        8px;
+
+    border:
+        1px solid var(--border);
+
+    background:
+        transparent;
+
+    color:
+        inherit;
+
+    cursor:
+        pointer;
+
+}
+
 /* =========================================================
    ✿ INTERNAL LINKS
 ========================================================= */
@@ -4055,6 +4218,170 @@ body.dark .mary-letter::before {
     }
 }
 
+/* Mary collection + reader overlays (Phase 1.5B) */
+.mary-view {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    padding: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .45s ease;
+}
+
+.mary-view.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.mary-view.is-visible .mary-letter {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+}
+
+.mary-collection-list {
+    position: relative;
+    z-index: 1;
+    margin: 0 0 26px;
+    max-height: 46vh;
+    overflow: auto;
+}
+
+.mary-empty {
+    margin: 4px 0 24px;
+    color: #6d7f62;
+    font-family: Georgia, serif;
+    font-size: 15px;
+    font-style: italic;
+}
+
+.mary-entry {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+    padding: 14px 6px;
+    border: 0;
+    border-bottom: 1px dotted rgba(72,102,64,.28);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.mary-entry:hover {
+    background: rgba(120,140,96,.07);
+}
+
+.mary-entry-title {
+    display: block;
+    font-family: Georgia, serif;
+    font-size: 18px;
+    color: #40533c;
+}
+
+.mary-entry-date {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    letter-spacing: .10em;
+    text-transform: lowercase;
+    color: #7d8f72;
+}
+
+.mary-entry-preview {
+    display: block;
+    margin-top: 6px;
+    font-family: Georgia, serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #6b7d62;
+    opacity: .82;
+}
+
+.mary-leave {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px 16px;
+    border: 1px dashed rgba(87,99,63,.42);
+    border-radius: 3px;
+    background: transparent;
+    color: #56684e;
+    font-family: Georgia, serif;
+    font-size: 14px;
+    letter-spacing: .04em;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease;
+}
+
+.mary-leave:hover {
+    background: rgba(120,140,96,.08);
+    border-color: rgba(87,99,63,.6);
+}
+
+.mary-reader-nav {
+    position: relative;
+    z-index: 4;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 24px;
+}
+
+.mary-link-btn {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #5c6d55;
+    font-family: Georgia, serif;
+    font-size: 12px;
+    letter-spacing: .06em;
+    cursor: pointer;
+    opacity: .74;
+}
+
+.mary-link-btn:hover {
+    opacity: 1;
+}
+
+.mary-reader-date {
+    margin: -14px 0 26px;
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: lowercase;
+    color: #7d8f72;
+}
+
+body.dark .mary-entry-title {
+    color: #d3e6c9;
+}
+
+body.dark .mary-entry-date,
+body.dark .mary-entry-preview,
+body.dark .mary-empty,
+body.dark .mary-reader-date {
+    color: #9fb795;
+}
+
+body.dark .mary-entry {
+    border-bottom-color: rgba(194,216,179,.16);
+}
+
+body.dark .mary-leave {
+    color: #c3d9b8;
+    border-color: rgba(194,216,179,.3);
+}
+
+body.dark .mary-link-btn {
+    color: #a9c19f;
+}
+
 </style>
 
 </head>
@@ -4341,7 +4668,7 @@ body.dark .mary-letter::before {
                 class="btn-small"
                 for="photoInput">
 
-                add photos
+                add files
 
             </label>
 
@@ -4349,11 +4676,10 @@ body.dark .mary-letter::before {
                 class="photo-input"
                 id="photoInput"
                 type="file"
-                accept="image/*"
                 multiple>
 
             <span class="photo-picker-help">
-                images only · max 5MB each · uploads when saved online
+                any file · max 5MB each · up to 5 per note · uploads when saved online
             </span>
 
             <div
@@ -4902,55 +5228,94 @@ body.dark .mary-letter::before {
 
             </div>
 
-            <article
-                class="mary-letter"
-                id="maryLetter"
+            <div
+                class="mary-view"
+                id="maryCollectionView"
                 aria-hidden="true">
 
-                <button
-                    class="mary-close"
-                    type="button"
-                    onclick="closeMaryExperience()">
+                <article
+                    class="mary-letter mary-collection">
 
-                    close letter
+                    <button
+                        class="mary-close"
+                        type="button"
+                        onclick="closeMaryExperience()">
 
-                </button>
+                        close
 
-                <p class="mary-letter-kicker">
-                    a little place inside the archive
-                </p>
+                    </button>
 
-                <h2>
-                    for mary
-                </h2>
-
-                <div class="mary-letter-copy">
-
-                    <p>
-                        if you found this, then i suppose you were looking in the right places.
+                    <p class="mary-letter-kicker">
+                        a little place inside the archive
                     </p>
 
-                    <p>
-                        nothing particularly dramatic is hiding here. just a quiet little corner,
-                        kept warm and green, with a few things that felt worth leaving somewhere.
+                    <h2>
+                        mary's little archive
+                    </h2>
+
+                    <div
+                        class="mary-collection-list"
+                        id="maryCollectionList">
+                    </div>
+
+                    <button
+                        class="mary-leave"
+                        type="button"
+                        onclick="maryLeaveNote()">
+
+                        + leave a note
+
+                    </button>
+
+                </article>
+
+            </div>
+
+            <div
+                class="mary-view"
+                id="maryReaderView"
+                aria-hidden="true">
+
+                <article
+                    class="mary-letter mary-reader">
+
+                    <nav class="mary-reader-nav">
+
+                        <button
+                            class="mary-link-btn"
+                            type="button"
+                            onclick="maryBackToArchive()">
+
+                            ← back to archive
+
+                        </button>
+
+                        <button
+                            class="mary-link-btn"
+                            type="button"
+                            onclick="maryEditCurrent()">
+
+                            edit
+
+                        </button>
+
+                    </nav>
+
+                    <h2 id="maryReaderTitle"></h2>
+
+                    <p
+                        class="mary-reader-date"
+                        id="maryReaderDate">
                     </p>
 
-                    <p>
-                        you can stay for a while. there is no big reveal. no ceremony. just this
-                        small letter, sitting here because it seemed nicer than leaving it unsaid.
-                    </p>
+                    <div
+                        class="mary-letter-copy"
+                        id="maryReaderBody">
+                    </div>
 
-                    <p class="mary-letter-signoff">
-                        — from the archive
-                    </p>
+                </article>
 
-                    <p class="mary-ending">
-                        good night, kekekeyomi.
-                    </p>
-
-                </div>
-
-            </article>
+            </div>
 
         </div>
 
@@ -5000,9 +5365,437 @@ function notePhotos(note) {
             photo =>
                 photo &&
                 photo.id &&
-                photo.storagePath
+                (photo.storagePath || photo.pending === true)
         )
         : [];
+}
+
+/* Transient signed URLs are never persisted or trusted as source of truth.
+   storagePath is authoritative; URLs are re-signed on demand and cached
+   in memory only, well inside their real expiry. */
+const signedUrlCache = new Map();
+
+function clearSignedUrlCache(storagePath) {
+    if (storagePath)
+        signedUrlCache.delete(storagePath);
+    else
+        signedUrlCache.clear();
+}
+
+async function resolveAttachmentUrl(attachment) {
+    if (!attachment)
+        return null;
+
+    if (attachment.pending === true && !attachment.storagePath) {
+        /* Phase 4 wires this to the IndexedDB blob store. Until a blob is
+           available locally, a pending attachment resolves to null so the
+           renderer shows a waiting/unavailable card instead of a broken img. */
+        return typeof getPendingBlobUrl === "function"
+            ? await getPendingBlobUrl(attachment.id)
+            : null;
+    }
+
+    if (!attachment.storagePath)
+        return typeof attachment.url === "string" ? attachment.url : null;
+
+    const cached = signedUrlCache.get(attachment.storagePath);
+    if (cached && cached.expires > Date.now())
+        return cached.url;
+
+    const { data, error } = await supabaseClient
+        .storage
+        .from("note-photos")
+        .createSignedUrl(attachment.storagePath, 60 * 60 * 24 * 30);
+
+    if (error || !data || !data.signedUrl) {
+        signedUrlCache.delete(attachment.storagePath);
+        return null;
+    }
+
+    signedUrlCache.set(attachment.storagePath, {
+        url: data.signedUrl,
+        expires: Date.now() + 60 * 60 * 1000
+    });
+
+    return data.signedUrl;
+}
+
+/* =========================================================
+   ✿ OFFLINE ATTACHMENT BLOB STORE (IndexedDB)
+   Bytes for not-yet-uploaded (pending) attachments live here,
+   never in localStorage. Keyed by the stable attachment id.
+========================================================= */
+
+const ATTACHMENT_DB_NAME = "archive-attachments";
+const ATTACHMENT_STORE = "blobs";
+const pendingBlobUrlCache = new Map();
+let attachmentDbPromise = null;
+
+function openAttachmentDb() {
+    if (attachmentDbPromise)
+        return attachmentDbPromise;
+
+    attachmentDbPromise = new Promise((resolve, reject) => {
+        const request = indexedDB.open(ATTACHMENT_DB_NAME, 1);
+
+        request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains(ATTACHMENT_STORE))
+                db.createObjectStore(ATTACHMENT_STORE, { keyPath: "id" });
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    }).catch(error => {
+        attachmentDbPromise = null;
+        throw error;
+    });
+
+    return attachmentDbPromise;
+}
+
+async function idbPutBlob(id, blob, meta) {
+    try {
+        const db = await openAttachmentDb();
+        await new Promise((resolve, reject) => {
+            const tx = db.transaction(ATTACHMENT_STORE, "readwrite");
+            tx.objectStore(ATTACHMENT_STORE).put({
+                id,
+                blob,
+                name: meta && meta.name,
+                type: meta && meta.type,
+                size: meta && meta.size
+            });
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+        });
+        return true;
+    } catch (error) {
+        console.error("Attachment blob store failed:", error);
+        return false;
+    }
+}
+
+async function idbGetBlob(id) {
+    if (!id)
+        return null;
+
+    try {
+        const db = await openAttachmentDb();
+        return await new Promise((resolve, reject) => {
+            const tx = db.transaction(ATTACHMENT_STORE, "readonly");
+            const request = tx.objectStore(ATTACHMENT_STORE).get(id);
+            request.onsuccess = () => resolve(request.result || null);
+            request.onerror = () => reject(request.error);
+        });
+    } catch (error) {
+        console.error("Attachment blob read failed:", error);
+        return null;
+    }
+}
+
+async function idbDeleteBlob(id) {
+    if (!id)
+        return;
+
+    const cached = pendingBlobUrlCache.get(id);
+    if (cached) {
+        URL.revokeObjectURL(cached);
+        pendingBlobUrlCache.delete(id);
+    }
+
+    try {
+        const db = await openAttachmentDb();
+        await new Promise((resolve, reject) => {
+            const tx = db.transaction(ATTACHMENT_STORE, "readwrite");
+            tx.objectStore(ATTACHMENT_STORE).delete(id);
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+        });
+    } catch (error) {
+        console.error("Attachment blob delete failed:", error);
+    }
+}
+
+/* Resolves a preview URL for a pending attachment from its local blob.
+   Returns null when this device has no bytes (e.g. a pending record that
+   arrived via cloud sync from another device) — the renderer then shows a
+   waiting/unavailable card instead of pretending it uploaded. */
+async function getPendingBlobUrl(id) {
+    if (!id)
+        return null;
+
+    const cached = pendingBlobUrlCache.get(id);
+    if (cached)
+        return cached;
+
+    const record = await idbGetBlob(id);
+    if (!record || !record.blob)
+        return null;
+
+    const url = URL.createObjectURL(record.blob);
+    pendingBlobUrlCache.set(id, url);
+    return url;
+}
+
+/* Uploads every pending attachment this device actually holds bytes for,
+   swaps pending -> storagePath, clears the local blob, and re-queues the
+   note through the existing note_changes machinery. Runs on reconnect and
+   at startup. Never bumps note.updated (finalizing an upload is not a
+   content edit and must not reorder notes). */
+async function uploadPendingAttachments() {
+    if (!navigator.onLine || !Array.isArray(notes))
+        return;
+
+    let changed = false;
+
+    for (const note of notes) {
+        if (!note || !Array.isArray(note.photos))
+            continue;
+
+        let noteChanged = false;
+
+        for (const photo of note.photos) {
+            if (!photo || photo.pending !== true || photo.storagePath)
+                continue;
+
+            const record = await idbGetBlob(photo.id);
+            if (!record || !record.blob)
+                continue;
+
+            const safeName =
+                (photo.name || "file").replace(/[^a-zA-Z0-9._-]/g, "-");
+            const storagePath = `${photo.id}/${safeName}`;
+
+            const { error } = await supabaseClient
+                .storage
+                .from("note-photos")
+                .upload(storagePath, record.blob, {
+                    upsert: true,
+                    contentType:
+                        photo.type || record.type || "application/octet-stream"
+                });
+
+            if (error) {
+                console.error("Pending attachment upload failed:", error);
+                continue;
+            }
+
+            photo.storagePath = storagePath;
+            delete photo.pending;
+            await idbDeleteBlob(photo.id);
+            noteChanged = true;
+            changed = true;
+        }
+
+        if (noteChanged)
+            queueNoteChange("edited", note);
+    }
+
+    if (changed) {
+        saveStorage();
+        renderNotes();
+        renderMiniNotes();
+        queueSync("Attachments uploaded");
+    }
+}
+
+function attachmentKind(type) {
+    const t = (type || "").toLowerCase();
+
+    if (t.startsWith("image/"))
+        return "image";
+    if (t === "application/pdf" || t.endsWith("/pdf"))
+        return "pdf";
+    if (t.startsWith("audio/"))
+        return "audio";
+    if (t.startsWith("video/"))
+        return "video";
+
+    return "file";
+}
+
+function humanFileSize(bytes) {
+    const n = Number(bytes);
+
+    if (!Number.isFinite(n))
+        return "";
+
+    const units = ["B", "KB", "MB", "GB"];
+    let value = n;
+    let i = 0;
+
+    while (value >= 1024 && i < units.length - 1) {
+        value /= 1024;
+        i++;
+    }
+
+    return `${value.toFixed(value < 10 && i > 0 ? 1 : 0)} ${units[i]}`;
+}
+
+function attachmentIconLabel(type, name) {
+    const kind = attachmentKind(type);
+
+    if (kind === "pdf")
+        return "PDF";
+    if (kind === "audio")
+        return "AUDIO";
+    if (kind === "video")
+        return "VIDEO";
+    if (kind === "image")
+        return "IMG";
+
+    const ext = (name || "").split(".").pop();
+
+    return ext && ext.length <= 4
+        ? ext.toUpperCase()
+        : "FILE";
+}
+
+function buildAttachmentCard(meta, getUrl) {
+    const card = document.createElement("div");
+    card.className = "attachment-card";
+
+    const icon = document.createElement("div");
+    icon.className = "attachment-card-icon";
+    icon.textContent = attachmentIconLabel(meta.type, meta.name);
+
+    const body = document.createElement("div");
+    body.className = "attachment-card-body";
+
+    const name = document.createElement("div");
+    name.className = "attachment-card-name";
+    name.textContent = meta.name || "file";
+    name.title = meta.name || "file";
+
+    const info = document.createElement("div");
+    info.className = "attachment-card-meta";
+    info.textContent =
+        [meta.pending ? "waiting to upload" : (meta.type || "unknown"),
+         humanFileSize(meta.size)]
+            .filter(Boolean)
+            .join(" · ");
+
+    body.append(name, info);
+    card.append(icon, body);
+
+    if (typeof getUrl === "function") {
+        const actions = document.createElement("div");
+        actions.className = "attachment-card-actions";
+
+        const openBtn = document.createElement("button");
+        openBtn.type = "button";
+        openBtn.textContent = "open";
+        openBtn.addEventListener("click", async () => {
+            const url = await getUrl();
+            if (url)
+                window.open(url, "_blank", "noopener");
+            else
+                setSyncStatus("File unavailable");
+        });
+
+        const downloadBtn = document.createElement("button");
+        downloadBtn.type = "button";
+        downloadBtn.textContent = "download";
+        downloadBtn.addEventListener("click", async () => {
+            const url = await getUrl();
+            if (!url) {
+                setSyncStatus("File unavailable");
+                return;
+            }
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = meta.name || "file";
+            a.target = "_blank";
+            a.rel = "noopener";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        });
+
+        actions.append(openBtn, downloadBtn);
+        card.append(actions);
+    }
+
+    return card;
+}
+
+/* Renders any attachment. Images/audio/video attempt an inline preview and
+   fall back to the file card if the bytes cannot be fetched or decoded, so an
+   unsupported/missing preview NEVER drops the attachment. */
+function renderAttachment(att, opts) {
+    opts = opts || {};
+
+    const getUrl =
+        opts.getUrl ||
+        function () { return resolveAttachmentUrl(att); };
+
+    const container = document.createElement("div");
+    container.className =
+        "attachment-item kind-" + attachmentKind(att.type);
+
+    const addRemove = () => {
+        if (!opts.removable)
+            return;
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "photo-remove";
+        remove.textContent = "×";
+        remove.title = "remove attachment";
+        remove.addEventListener("click", () => opts.onRemove && opts.onRemove());
+        container.appendChild(remove);
+    };
+
+    const renderCard = () => {
+        container.textContent = "";
+        container.appendChild(
+            buildAttachmentCard(
+                { name: att.name, type: att.type, size: att.size, pending: att.pending === true },
+                getUrl
+            )
+        );
+        addRemove();
+    };
+
+    const kind = attachmentKind(att.type);
+
+    if (kind === "image" || kind === "audio" || kind === "video") {
+        const media = document.createElement(
+            kind === "image" ? "img" : kind
+        );
+
+        if (kind === "image") {
+            media.alt = att.name || "attachment";
+            media.loading = "lazy";
+        } else {
+            media.controls = true;
+        }
+
+        let fellBack = false;
+        media.addEventListener("error", () => {
+            if (fellBack)
+                return;
+            fellBack = true;
+            renderCard();
+        });
+
+        container.appendChild(media);
+        addRemove();
+
+        getUrl().then(url => {
+            if (fellBack)
+                return;
+            if (!url) {
+                renderCard();
+                return;
+            }
+            media.src = url;
+        });
+    } else {
+        renderCard();
+    }
+
+    return container;
 }
 
 function revokePhotoPreviewUrls() {
@@ -5023,32 +5816,26 @@ function renderPhotoPreviews() {
 
     selectedPhotoFiles.forEach(
         (item, index) => {
-            const wrapper =
-                document.createElement("div");
-            wrapper.className = "photo-preview";
-
-            const image =
-                document.createElement("img");
-            image.src = item.previewUrl;
-            image.alt = item.file.name;
-
-            const remove =
-                document.createElement("button");
-            remove.type = "button";
-            remove.className = "photo-remove";
-            remove.textContent = "×";
-            remove.title = "remove photo";
-            remove.addEventListener(
-                "click",
-                () => {
-                    URL.revokeObjectURL(item.previewUrl);
-                    selectedPhotoFiles.splice(index, 1);
-                    renderPhotoPreviews();
+            const el = renderAttachment(
+                {
+                    id: item.attachmentId,
+                    name: item.file.name,
+                    type: item.file.type,
+                    size: item.file.size,
+                    pending: true
+                },
+                {
+                    getUrl: () => Promise.resolve(item.previewUrl),
+                    removable: true,
+                    onRemove: () => {
+                        URL.revokeObjectURL(item.previewUrl);
+                        selectedPhotoFiles.splice(index, 1);
+                        renderPhotoPreviews();
+                    }
                 }
             );
 
-            wrapper.append(image, remove);
-            area.appendChild(wrapper);
+            area.appendChild(el);
         }
     );
 }
@@ -5063,11 +5850,6 @@ function preparePhotoSelection(event) {
         removedPhotoPaths.length;
 
     for (const file of files) {
-        if (!file.type.startsWith("image/")) {
-            setSyncStatus("Only image files can be attached");
-            continue;
-        }
-
         if (file.size > MAX_PHOTO_SIZE) {
             setSyncStatus(`${file.name} is larger than 5MB`);
             continue;
@@ -5078,12 +5860,13 @@ function preparePhotoSelection(event) {
             selectedPhotoFiles.length >=
             MAX_PHOTOS_PER_NOTE
         ) {
-            setSyncStatus("A note can contain up to 5 photos");
+            setSyncStatus("A note can contain up to 5 attachments");
             break;
         }
 
         selectedPhotoFiles.push({
             file,
+            attachmentId: uid(),
             previewUrl: URL.createObjectURL(file)
         });
     }
@@ -5106,48 +5889,43 @@ function loadEditorPhotos(note) {
 
     notePhotos(note).forEach(
         photo => {
-            const wrapper =
-                document.createElement("div");
-            wrapper.className = "photo-preview";
-
-            const image =
-                document.createElement("img");
-            image.src = photo.url;
-            image.alt = photo.name || "note photo";
-
-            const remove =
-                document.createElement("button");
-            remove.type = "button";
-            remove.className = "photo-remove";
-            remove.textContent = "×";
-            remove.title = "remove photo";
-            remove.addEventListener(
-                "click",
-                () => {
-                    removedPhotoPaths.push(
-                        photo.storagePath
-                    );
-                    wrapper.remove();
+            const el = renderAttachment(
+                photo,
+                {
+                    removable: true,
+                    onRemove: () => {
+                        removedPhotoPaths.push(
+                            photo.storagePath || photo.id
+                        );
+                        if (photo.pending === true)
+                            idbDeleteBlob(photo.id);
+                        el.remove();
+                    }
                 }
             );
 
-            wrapper.append(image, remove);
-            area.appendChild(wrapper);
+            area.appendChild(el);
         }
     );
 }
 
-async function uploadPhotoFiles(noteId, items) {
+async function uploadPhotoFiles(items) {
     const uploaded = [];
 
     for (const item of items) {
+        /* Path is derived from the attachment's own stable id — never from a
+           mutable/draft note id and never from a per-call random uid. Retries
+           therefore target the SAME key (upsert overwrites), so a retry cannot
+           orphan bytes or leave metadata pointing somewhere else. */
+        const attachmentId =
+            item.attachmentId || item.id || uid();
         const safeName =
-            item.file.name.replace(
+            (item.file.name || "file").replace(
                 /[^a-zA-Z0-9._-]/g,
                 "-"
             );
         const storagePath =
-            `${noteId}/${uid()}-${safeName}`;
+            `${attachmentId}/${safeName}`;
 
         const { error: uploadError } =
             await supabaseClient
@@ -5157,30 +5935,19 @@ async function uploadPhotoFiles(noteId, items) {
                     storagePath,
                     item.file,
                     {
-                        upsert: false,
-                        contentType: item.file.type
+                        upsert: true,
+                        contentType:
+                            item.file.type ||
+                            "application/octet-stream"
                     }
                 );
 
         if (uploadError)
             throw uploadError;
 
-        const { data, error: urlError } =
-            await supabaseClient
-                .storage
-                .from("note-photos")
-                .createSignedUrl(
-                    storagePath,
-                    60 * 60 * 24 * 30
-                );
-
-        if (urlError || !data || !data.signedUrl)
-            throw urlError || new Error("Could not sign photo URL");
-
         uploaded.push({
-            id: uid(),
+            id: attachmentId,
             storagePath,
-            url: data.signedUrl,
             name: item.file.name,
             type: item.file.type,
             size: item.file.size
@@ -5206,6 +5973,313 @@ async function removeStoredPhotos(paths) {
     if (error)
         console.error("Photo removal failed:", error);
 }
+
+/* =========================================================
+   ✿ ATTACHMENT MIGRATION INSPECTOR (Phase 0 — READ ONLY)
+   Dev-invoked only. Never runs on load, never writes.
+   Enumerates attachment records (local + note_changes) and
+   bucket objects, then classifies each record.
+========================================================= */
+
+async function listAttachmentBucket() {
+    const bucket = supabaseClient.storage.from("note-photos");
+    const objects = [];
+
+    async function walk(prefix) {
+        const { data, error } = await bucket.list(prefix, {
+            limit: 1000,
+            sortBy: { column: "name", order: "asc" }
+        });
+
+        if (error) {
+            console.error("Bucket list failed at", prefix, error);
+            return;
+        }
+
+        for (const entry of data || []) {
+            const path = prefix ? `${prefix}/${entry.name}` : entry.name;
+
+            if (entry.id === null) {
+                await walk(path);
+            } else {
+                objects.push({
+                    path,
+                    name: entry.name,
+                    size: entry.metadata?.size ?? null,
+                    mime: entry.metadata?.mimetype ?? null
+                });
+            }
+        }
+    }
+
+    await walk("");
+    return objects;
+}
+
+function collectAttachmentRecords() {
+    const records = [];
+
+    const pushFromNote = (note, source) => {
+        if (!note || !Array.isArray(note.photos))
+            return;
+
+        note.photos.forEach(photo => {
+            records.push({
+                source,
+                noteId: note.id ?? null,
+                noteTitle: note.title ?? null,
+                photo: photo || {},
+                photoId: photo?.id ?? null,
+                name: photo?.name ?? null,
+                type: photo?.type ?? null,
+                size: photo?.size ?? null,
+                storagePath: photo?.storagePath ?? null,
+                pending: photo?.pending === true,
+                hasUrl: typeof photo?.url === "string" && !!photo.url
+            });
+        });
+    };
+
+    (Array.isArray(notes) ? notes : []).forEach(
+        note => pushFromNote(note, "local")
+    );
+
+    return records;
+}
+
+async function collectCloudAttachmentRecords() {
+    const records = [];
+
+    const { data: noteChanges, error } = await supabaseClient
+        .from("note_changes")
+        .select("note_id, action, changed_at, note_state");
+
+    if (error) {
+        console.error("Could not load note_changes for inspection:", error);
+        return records;
+    }
+
+    const latest = new Map();
+
+    (noteChanges || []).forEach(change => {
+        if (!change.note_id)
+            return;
+
+        const prev = latest.get(change.note_id);
+        const t = Date.parse(change.changed_at || "");
+        const pt = prev ? Date.parse(prev.changed_at || "") : -Infinity;
+
+        if (!prev || t >= pt)
+            latest.set(change.note_id, change);
+    });
+
+    latest.forEach(change => {
+        const state = change.note_state;
+        if (!state || !Array.isArray(state.photos))
+            return;
+
+        state.photos.forEach(photo => {
+            records.push({
+                source: "cloud",
+                noteId: change.note_id,
+                noteTitle: state.title ?? null,
+                action: change.action,
+                photo: photo || {},
+                photoId: photo?.id ?? null,
+                name: photo?.name ?? null,
+                type: photo?.type ?? null,
+                size: photo?.size ?? null,
+                storagePath: photo?.storagePath ?? null,
+                pending: photo?.pending === true,
+                hasUrl: typeof photo?.url === "string" && !!photo.url
+            });
+        });
+    });
+
+    return records;
+}
+
+function classifyAttachmentRecord(record, objects) {
+    if (!record.photoId)
+        return { classification: "invalid/fake", reason: "no attachment id (filtered by notePhotos)" };
+
+    if (record.pending && !record.storagePath)
+        return { classification: "pending", reason: "not yet uploaded" };
+
+    if (!record.storagePath)
+        return { classification: "invalid/fake", reason: "no storagePath and not pending" };
+
+    const exact = objects.find(o => o.path === record.storagePath);
+    if (exact)
+        return { classification: "valid", reason: "object exists at storagePath", object: exact };
+
+    /* Uploaded object names are `${uid()}-${safeName}`, so match against the
+       safeName suffix (and stem) rather than the raw recorded filename. */
+    const safeName = (record.name || "").replace(/[^a-zA-Z0-9._-]/g, "-");
+    const stem = safeName.replace(/\.[^.]+$/, "");
+    const nameMatches = o =>
+        safeName && (o.name === safeName || o.name.endsWith("-" + safeName) || o.name.endsWith(safeName));
+    const stemMatches = o => {
+        if (!stem)
+            return false;
+        const oStem = o.name.replace(/\.[^.]+$/, "");
+        return oStem === stem || oStem.endsWith("-" + stem) || oStem.endsWith(stem);
+    };
+
+    const byName = objects.filter(nameMatches);
+    const byNameSize = byName.filter(
+        o => record.size != null && o.size === record.size
+    );
+    const byNameSizeMime = byNameSize.filter(
+        o => record.type != null && o.mime === record.type
+    );
+    const byStem = objects.filter(stemMatches);
+
+    if (byNameSizeMime.length === 1)
+        return {
+            classification: "uniquely-repairable",
+            reason: "exactly one object matches name+size+mime",
+            proposedPath: byNameSizeMime[0].path,
+            object: byNameSizeMime[0]
+        };
+
+    if (byNameSize.length === 1)
+        return {
+            classification: "uniquely-repairable",
+            reason: "exactly one object matches name+size",
+            proposedPath: byNameSize[0].path,
+            object: byNameSize[0]
+        };
+
+    if (byNameSizeMime.length > 1 || byNameSize.length > 1)
+        return {
+            classification: "ambiguous",
+            reason: "multiple objects match",
+            candidates: (byNameSize.length ? byNameSize : byNameSizeMime).map(o => o.path)
+        };
+
+    if (byStem.length)
+        return {
+            classification: "ambiguous",
+            reason: "only a same-stem object exists but size/type differ — not a verified match",
+            candidates: byStem.map(o => ({ path: o.path, size: o.size, mime: o.mime }))
+        };
+
+    return { classification: "missing", reason: "no object matches; bytes likely gone" };
+}
+
+async function inspectAttachments() {
+    const objects = await listAttachmentBucket();
+    const localRecords = collectAttachmentRecords();
+    const cloudRecords = await collectCloudAttachmentRecords();
+    const allRecords = [...localRecords, ...cloudRecords];
+
+    const referencedPaths = new Set(
+        allRecords.map(r => r.storagePath).filter(Boolean)
+    );
+
+    const classified = allRecords.map(record => ({
+        ...record,
+        ...classifyAttachmentRecord(record, objects)
+    }));
+
+    const orphans = objects.filter(o => !referencedPaths.has(o.path));
+
+    const report = {
+        bucketObjectCount: objects.length,
+        bucketObjects: objects,
+        recordCount: allRecords.length,
+        classified,
+        orphans,
+        summary: classified.reduce((acc, r) => {
+            acc[r.classification] = (acc[r.classification] || 0) + 1;
+            return acc;
+        }, {})
+    };
+
+    console.log("=== ATTACHMENT INSPECTION (read-only) ===");
+    console.log("summary:", report.summary);
+    classified.forEach(r => {
+        console.log(
+            `[${r.classification}] ${r.source} note=${r.noteTitle} (${r.noteId}) ` +
+            `att=${r.photoId} name=${r.name} type=${r.type} size=${r.size}\n` +
+            `    storagePath=${r.storagePath}\n` +
+            `    reason=${r.reason}` +
+            (r.proposedPath ? `\n    proposedPath=${r.proposedPath}` : "")
+        );
+    });
+    console.log("orphans (bytes with no metadata):", orphans.map(o => o.path));
+
+    return report;
+}
+
+window.__inspectAttachments = inspectAttachments;
+
+/* Phase 5 — EXPLICIT, dev-invoked migration repair for Record B only.
+   Never runs on load. Refuses to mutate anything unless the record still
+   classifies as uniquely-repairable (name+size+mime match a single bucket
+   object). Record A (ambiguous/missing), Record C (fake seed) and the orphan
+   object are deliberately left untouched. */
+async function repairAttachmentRecordB() {
+    const TARGET_NOTE_ID = "mu8f9jugmws4hhbjd0m";
+    const TARGET_ATTACHMENT_ID = "mu8f9juggph1paqjn4q";
+
+    const note = (Array.isArray(notes) ? notes : [])
+        .find(n => n && n.id === TARGET_NOTE_ID);
+
+    if (!note)
+        return { ok: false, reason: "target note not present locally" };
+
+    const photo = Array.isArray(note.photos)
+        ? note.photos.find(p => p && p.id === TARGET_ATTACHMENT_ID)
+        : null;
+
+    if (!photo)
+        return { ok: false, reason: "target attachment record not found" };
+
+    const objects = await listAttachmentBucket();
+    const result = classifyAttachmentRecord(
+        {
+            photoId: photo.id,
+            name: photo.name,
+            type: photo.type,
+            size: photo.size,
+            storagePath: photo.storagePath,
+            pending: photo.pending === true
+        },
+        objects
+    );
+
+    if (result.classification !== "uniquely-repairable" || !result.proposedPath)
+        return {
+            ok: false,
+            reason: "refusing to mutate — not uniquely repairable",
+            classification: result.classification
+        };
+
+    const before = {
+        storagePath: photo.storagePath,
+        hadUrl: typeof photo.url === "string"
+    };
+
+    photo.storagePath = result.proposedPath;
+    delete photo.url;
+
+    clearSignedUrlCache();
+    queueNoteChange("edited", note);
+    saveStorage();
+    renderNotes();
+    renderMiniNotes();
+
+    return {
+        ok: true,
+        classification: result.classification,
+        before,
+        after: { storagePath: photo.storagePath }
+    };
+}
+
+window.__repairAttachmentRecordB = repairAttachmentRecordB;
 
 function noteTimestamp(note) {
     const value = note && note.updated;
@@ -5271,34 +6345,6 @@ function queueNoteChange(action, note) {
         JSON.stringify(pendingNoteChanges)
     );
 }
-
-/* =========================================================
-   ✿ PHASE 1.5A DEV TEST HOOK — REMOVE IN PHASE 1.5B
-   Data-layer only. Not wired to any UI/button.
-   Console usage: __markNoteAsMary("<noteId>")
-========================================================= */
-function __markNoteAsMary(noteId) {
-    const note = notes.find(n => n.id === noteId);
-
-    if (!note) {
-        console.warn("[mary-test] note not found:", noteId);
-        return false;
-    }
-
-    note.isMary = true;
-    note.updated = Date.now();
-
-    queueNoteChange("edited", note);
-    saveStorage();
-    renderNotes();
-    renderMiniNotes();
-    syncToSupabase();
-
-    console.info("[mary-test] isMary:true set for", noteId);
-    return true;
-}
-window.__markNoteAsMary = __markNoteAsMary;
-/* ✿ END PHASE 1.5A DEV TEST HOOK */
 
 function mergeNotes(localNotes, remoteNotes) {
     const merged = new Map(
@@ -5536,9 +6582,10 @@ async function syncToSupabase() {
     }
 }
 
-window.addEventListener("online", () => {
-    loadCloudNotes();
+window.addEventListener("online", async () => {
+    await loadCloudNotes();
     syncToSupabase();
+    uploadPendingAttachments();
 });
 
 window.addEventListener("offline", () => {
@@ -5573,6 +6620,10 @@ if (!Array.isArray(historySnapshots))
 
 let currentNoteId =
     null;
+
+
+let pendingNewNoteIsMary =
+    false;
 
 
 let selectedDecoration =
@@ -6077,9 +7128,8 @@ async function saveCurrentNote() {
     const existingPhotos =
         notePhotos(existingNote).filter(
             photo =>
-                !removedPhotoPaths.includes(
-                    photo.storagePath
-                )
+                !removedPhotoPaths.includes(photo.storagePath) &&
+                !removedPhotoPaths.includes(photo.id)
         );
 
     if (
@@ -6087,37 +7137,55 @@ async function saveCurrentNote() {
         selectedPhotoFiles.length >
         MAX_PHOTOS_PER_NOTE
     ) {
-        setSyncStatus("A note can contain up to 5 photos");
-        return;
-    }
-
-    if (
-        selectedPhotoFiles.length &&
-        !navigator.onLine
-    ) {
-        setSyncStatus(
-            "Photo uploads need internet; text was not saved"
-        );
+        setSyncStatus("A note can contain up to 5 attachments");
         return;
     }
 
     let uploadedPhotos = [];
 
     if (selectedPhotoFiles.length) {
-        setSyncStatus("Uploading photos...");
+        if (navigator.onLine) {
+            setSyncStatus("Uploading attachments...");
 
-        try {
-            uploadedPhotos =
-                await uploadPhotoFiles(
-                    noteId,
-                    selectedPhotoFiles
+            try {
+                uploadedPhotos =
+                    await uploadPhotoFiles(
+                        selectedPhotoFiles
+                    );
+                uploadedPhotos.forEach(
+                    photo => idbDeleteBlob(photo.id)
                 );
-        } catch (error) {
-            console.error("Photo upload failed:", error);
+            } catch (error) {
+                console.error("Attachment upload failed:", error);
+                setSyncStatus(
+                    "Attachment upload failed; note not saved"
+                );
+                return;
+            }
+        } else {
+            /* Offline: persist text + attachment metadata now, stash the bytes
+               in IndexedDB, and mark each record pending. Saving is never
+               blocked by being offline; uploadPendingAttachments() finalizes
+               them on reconnect. */
             setSyncStatus(
-                "Photo upload failed; note not saved"
+                "Offline — saved; attachments will upload on reconnect"
             );
-            return;
+
+            for (const item of selectedPhotoFiles) {
+                await idbPutBlob(item.attachmentId, item.file, {
+                    name: item.file.name,
+                    type: item.file.type,
+                    size: item.file.size
+                });
+
+                uploadedPhotos.push({
+                    id: item.attachmentId,
+                    name: item.file.name,
+                    type: item.file.type,
+                    size: item.file.size,
+                    pending: true
+                });
+            }
         }
     }
 
@@ -6180,7 +7248,7 @@ async function saveCurrentNote() {
                     Date.now(),
 
                 isMary:
-                    false
+                    pendingNewNoteIsMary === true
 
             };
 
@@ -6194,6 +7262,9 @@ async function saveCurrentNote() {
             newNote.id;
 
         queueNoteChange("created", newNote);
+
+        pendingNewNoteIsMary =
+            false;
     }
 
     const pathsToRemove =
@@ -6232,6 +7303,9 @@ function newNote() {
 
     currentNoteId =
         null;
+
+    pendingNewNoteIsMary =
+        false;
 
     loadEditorPhotos(null);
 
@@ -6276,6 +7350,9 @@ function openNote(id) {
 
     currentNoteId =
         note.id;
+
+    pendingNewNoteIsMary =
+        false;
 
     loadEditorPhotos(note);
 
@@ -6338,6 +7415,11 @@ function deleteNoteById(id) {
     }
 
     queueNoteChange("deleted", target);
+
+    notePhotos(target).forEach(photo => {
+        if (photo.pending === true)
+            idbDeleteBlob(photo.id);
+    });
 
     removeStoredPhotos(
         notePhotos(target).map(
@@ -7000,47 +8082,9 @@ function renderNotes() {
 
                 notePhotos(note).forEach(
                     photo => {
-                        const figure =
-                            document.createElement("div");
-                        figure.className =
-                            "note-photo";
-
-                        const image =
-                            document.createElement("img");
-                        image.src = photo.url;
-                        image.alt =
-                            photo.name || "note photo";
-                        image.loading = "lazy";
-                        image.addEventListener(
-                            "error",
-                            async () => {
-                                const { data } =
-                                    await supabaseClient
-                                        .storage
-                                        .from("note-photos")
-                                        .createSignedUrl(
-                                            photo.storagePath,
-                                            60 * 60 * 24 * 30
-                                        );
-                                if (data && data.signedUrl)
-                                    image.src = data.signedUrl;
-                            }
+                        gallery.appendChild(
+                            renderAttachment(photo)
                         );
-
-                        supabaseClient
-                            .storage
-                            .from("note-photos")
-                            .createSignedUrl(
-                                photo.storagePath,
-                                60 * 60 * 24 * 30
-                            )
-                            .then(({ data }) => {
-                                if (data && data.signedUrl)
-                                    image.src = data.signedUrl;
-                            });
-
-                        figure.appendChild(image);
-                        gallery.appendChild(figure);
                     }
                 );
 
@@ -7232,7 +8276,231 @@ function renderMiniNotes() {
 ========================================================= */
 
 let maryExperienceOpen = false;
-let maryLetterOpen = false;
+let maryCollectionOpen = false;
+let maryReaderNoteId = null;
+
+/* Mary's collection is a live VIEW of the single source of truth:
+   notes.filter(note => note.isMary === true). No separate storage,
+   no caching — re-derived from notes[] on every render. Sorted
+   newest-updated-first via the existing noteTimestamp() helper. */
+function maryCollectionNotes() {
+
+    return notes
+        .filter(
+            note =>
+                note.isMary === true &&
+                !deletedNoteIds.includes(note.id)
+        )
+        .sort(
+            (a, b) =>
+                noteTimestamp(b) - noteTimestamp(a)
+        );
+
+}
+
+function maryFormatDate(note) {
+
+    const value =
+        Number(note.updated) ||
+        Date.parse(note.updated) ||
+        Number(note.created) ||
+        Date.parse(note.created);
+
+    if (!Number.isFinite(value))
+        return "";
+
+    return new Date(value)
+        .toLocaleDateString(
+            undefined,
+            {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+            }
+        );
+
+}
+
+function maryCollectionView() {
+    return document.getElementById("maryCollectionView");
+}
+
+function maryReaderView() {
+    return document.getElementById("maryReaderView");
+}
+
+function showMaryView(view) {
+
+    const collection = maryCollectionView();
+    const reader = maryReaderView();
+
+    if (collection) {
+
+        const on = view === "collection";
+        collection.classList.toggle("is-visible", on);
+        collection.setAttribute("aria-hidden", String(!on));
+
+    }
+
+    if (reader) {
+
+        const on = view === "reader";
+        reader.classList.toggle("is-visible", on);
+        reader.setAttribute("aria-hidden", String(!on));
+
+    }
+
+}
+
+function renderMaryCollection() {
+
+    const list =
+        document.getElementById("maryCollectionList");
+
+    if (!list)
+        return;
+
+    list.innerHTML = "";
+
+    const maryNotes = maryCollectionNotes();
+
+    if (!maryNotes.length) {
+
+        const empty =
+            document.createElement("p");
+
+        empty.className = "mary-empty";
+        empty.textContent =
+            "nothing has been left here yet.";
+
+        list.appendChild(empty);
+        return;
+
+    }
+
+    maryNotes.forEach(note => {
+
+        const entry =
+            document.createElement("button");
+
+        entry.type = "button";
+        entry.className = "mary-entry";
+        entry.addEventListener(
+            "click",
+            () => openMaryReader(note.id)
+        );
+
+        const title =
+            document.createElement("span");
+
+        title.className = "mary-entry-title";
+        title.textContent =
+            (note.title || "").trim() || "untitled";
+
+        const date =
+            document.createElement("span");
+
+        date.className = "mary-entry-date";
+        date.textContent = maryFormatDate(note);
+
+        entry.appendChild(title);
+        entry.appendChild(date);
+
+        const preview =
+            getPlainText(note.content || "")
+                .slice(0, 90);
+
+        if (preview) {
+
+            const previewEl =
+                document.createElement("span");
+
+            previewEl.className = "mary-entry-preview";
+            previewEl.textContent = preview;
+
+            entry.appendChild(previewEl);
+
+        }
+
+        list.appendChild(entry);
+
+    });
+
+}
+
+function openMaryReader(id) {
+
+    const note =
+        notes.find(n => n.id === id);
+
+    if (!note || note.isMary !== true)
+        return;
+
+    maryReaderNoteId = note.id;
+
+    const title =
+        document.getElementById("maryReaderTitle");
+
+    const date =
+        document.getElementById("maryReaderDate");
+
+    const body =
+        document.getElementById("maryReaderBody");
+
+    if (title)
+        title.textContent =
+            (note.title || "").trim() || "untitled";
+
+    if (date)
+        date.textContent = maryFormatDate(note);
+
+    if (body) {
+
+        body.innerHTML = "";
+        body.appendChild(
+            renderStoredContent(note.content || "")
+        );
+
+    }
+
+    showMaryView("reader");
+
+}
+
+function maryBackToArchive() {
+
+    maryReaderNoteId = null;
+    renderMaryCollection();
+    showMaryView("collection");
+
+}
+
+function maryEditCurrent() {
+
+    const id = maryReaderNoteId;
+
+    closeMaryExperience();
+
+    if (id)
+        openNote(id);
+
+}
+
+function maryLeaveNote() {
+
+    closeMaryExperience();
+
+    newNote();
+
+    pendingNewNoteIsMary = true;
+
+    const titleField =
+        document.getElementById("noteTitle");
+
+    if (titleField)
+        titleField.focus();
+
+}
 
 function openMaryExperience() {
 
@@ -7245,21 +8513,19 @@ function openMaryExperience() {
     const envelopeWrap =
         document.getElementById("maryEnvelopeWrap");
 
-    const letter =
-        document.getElementById("maryLetter");
-
-    if (!experience || !envelope || !envelopeWrap || !letter)
+    if (!experience || !envelope || !envelopeWrap)
         return;
 
     maryExperienceOpen = true;
-    maryLetterOpen = false;
+    maryCollectionOpen = false;
+    maryReaderNoteId = null;
 
     experience.classList.add("is-open");
     experience.setAttribute("aria-hidden", "false");
     envelope.classList.remove("is-open");
     envelopeWrap.classList.remove("is-hidden");
-    letter.classList.remove("is-visible");
-    letter.setAttribute("aria-hidden", "true");
+
+    showMaryView(null);
 
     document.body.classList.add("mary-is-open");
 
@@ -7269,7 +8535,7 @@ function openMaryExperience() {
     );
 }
 
-function openMaryLetter() {
+function revealMaryCollection() {
 
     if (!maryExperienceOpen)
         return;
@@ -7280,21 +8546,17 @@ function openMaryLetter() {
     const envelopeWrap =
         document.getElementById("maryEnvelopeWrap");
 
-    const letter =
-        document.getElementById("maryLetter");
-
-    if (!envelope || !envelopeWrap || !letter)
+    if (!envelope || !envelopeWrap)
         return;
-
-    maryLetterOpen = true;
 
     envelope.classList.add("is-open");
 
     window.setTimeout(
         () => {
             envelopeWrap.classList.add("is-hidden");
-            letter.classList.add("is-visible");
-            letter.setAttribute("aria-hidden", "false");
+            renderMaryCollection();
+            showMaryView("collection");
+            maryCollectionOpen = true;
         },
         360
     );
@@ -7311,17 +8573,14 @@ function closeMaryExperience() {
     const envelopeWrap =
         document.getElementById("maryEnvelopeWrap");
 
-    const letter =
-        document.getElementById("maryLetter");
-
-    if (!experience || !envelope || !envelopeWrap || !letter)
+    if (!experience || !envelope || !envelopeWrap)
         return;
 
     maryExperienceOpen = false;
-    maryLetterOpen = false;
+    maryCollectionOpen = false;
+    maryReaderNoteId = null;
 
-    letter.classList.remove("is-visible");
-    letter.setAttribute("aria-hidden", "true");
+    showMaryView(null);
 
     envelope.classList.remove("is-open");
     envelopeWrap.classList.remove("is-hidden");
@@ -7351,7 +8610,7 @@ function handleMaryKeydown(event) {
         ) {
 
             event.preventDefault();
-            openMaryLetter();
+            revealMaryCollection();
 
         }
 
@@ -7548,8 +8807,11 @@ function toggleMaryArchive() {
     if (!note)
         return;
 
+    /* Classification only — do not bump note.updated. The Mary
+       archive toggle must not look like a content edit, create a
+       history version, or reorder the collection. isMary still
+       persists via queueNoteChange → note_changes.note_state. */
     note.isMary = !(note.isMary === true);
-    note.updated = Date.now();
 
     queueNoteChange("edited", note);
 
@@ -9187,28 +10449,53 @@ function setupTrashCan() {
         trash.parentElement !==
         document.body
     ) {
-        const defaultRect =
-            trash.getBoundingClientRect();
-
         document.body.appendChild(
             trash
         );
-
-        trash.style.position =
-            "fixed";
-
-        trash.style.left =
-            defaultRect.left + "px";
-
-        trash.style.top =
-            defaultRect.top + "px";
-
-        trash.style.right =
-            "auto";
-
-        trash.style.bottom =
-            "auto";
     }
+
+    /* Default fixed position must be viewport-correct, not a copy of
+       the CSS document-scale location (which on a tall page lands far
+       below the fold). Anchor bottom-right like the .trash-can CSS
+       intent (right:7%, bottom:105px) using viewport metrics only, so
+       it never depends on how many notes are rendered, then run it
+       through the existing clamping. Only persist when this profile
+       has no saved position yet, so an existing trashCanPosition is
+       never clobbered (restorePosition below re-applies it). */
+    let hasSavedPosition =
+        false;
+
+    try {
+        const saved =
+            JSON.parse(
+                localStorage.getItem(storageKey)
+            );
+
+        hasSavedPosition =
+            !!saved &&
+            Number.isFinite(Number(saved.x)) &&
+            Number.isFinite(Number(saved.y));
+    } catch (error) {
+        hasSavedPosition =
+            false;
+    }
+
+    const defaultPosition =
+        {
+            x:
+                window.innerWidth -
+                trash.offsetWidth -
+                Math.round(window.innerWidth * 0.07),
+            y:
+                window.innerHeight -
+                trash.offsetHeight -
+                105
+        };
+
+    applyPosition(
+        defaultPosition,
+        !hasSavedPosition
+    );
 
     function getClampedPosition(x, y) {
         const maxX =
@@ -10457,7 +11744,7 @@ if (maryEnvelope) {
 
     maryEnvelope.addEventListener(
         "click",
-        openMaryLetter
+        revealMaryCollection
     );
 
     maryEnvelope.addEventListener(
@@ -10491,7 +11778,7 @@ loadDraft();
 renderNotes();
 renderMiniNotes();
 setupTrashCan();
-loadCloudNotes();
+loadCloudNotes().then(() => uploadPendingAttachments());
 syncToSupabase();
 
 </script>
