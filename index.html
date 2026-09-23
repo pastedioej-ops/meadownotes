@@ -6029,6 +6029,33 @@ async function uploadPhotoFiles(items) {
     return uploaded;
 }
 
+/* Durable pending path shared by offline saves AND online-upload failures:
+   stash each file's bytes in IndexedDB and return pending metadata records.
+   Both branches call this — there is deliberately no second implementation.
+   Storage-path construction is unchanged (uploadPendingAttachments derives
+   the same `${id}/${safeName}` key later), so a deferred upload is idempotent. */
+async function stashPendingAttachments(items) {
+    const pending = [];
+
+    for (const item of items) {
+        await idbPutBlob(item.attachmentId, item.file, {
+            name: item.file.name,
+            type: item.file.type,
+            size: item.file.size
+        });
+
+        pending.push({
+            id: item.attachmentId,
+            name: item.file.name,
+            type: item.file.type,
+            size: item.file.size,
+            pending: true
+        });
+    }
+
+    return pending;
+}
+
 async function removeStoredPhotos(paths) {
     const validPaths =
         paths.filter(Boolean);
@@ -7228,11 +7255,22 @@ async function saveCurrentNote() {
                     photo => idbDeleteBlob(photo.id)
                 );
             } catch (error) {
-                console.error("Attachment upload failed:", error);
-                setSyncStatus(
-                    "Attachment upload failed; note not saved"
+                /* Online but the upload failed: do NOT lose the note. Fall back
+                   to the same durable pending path used offline — text saves now,
+                   bytes go to IndexedDB, uploadPendingAttachments() retries on
+                   reconnect. Storage paths are stable, so any partially uploaded
+                   bytes are simply overwritten (upsert) — no duplicate records. */
+                console.error(
+                    "Attachment upload failed; deferring to pending:",
+                    error
                 );
-                return;
+                setSyncStatus(
+                    "Upload failed — saved; attachments will retry on reconnect"
+                );
+                uploadedPhotos =
+                    await stashPendingAttachments(
+                        selectedPhotoFiles
+                    );
             }
         } else {
             /* Offline: persist text + attachment metadata now, stash the bytes
@@ -7243,21 +7281,10 @@ async function saveCurrentNote() {
                 "Offline — saved; attachments will upload on reconnect"
             );
 
-            for (const item of selectedPhotoFiles) {
-                await idbPutBlob(item.attachmentId, item.file, {
-                    name: item.file.name,
-                    type: item.file.type,
-                    size: item.file.size
-                });
-
-                uploadedPhotos.push({
-                    id: item.attachmentId,
-                    name: item.file.name,
-                    type: item.file.type,
-                    size: item.file.size,
-                    pending: true
-                });
-            }
+            uploadedPhotos =
+                await stashPendingAttachments(
+                    selectedPhotoFiles
+                );
         }
     }
 
