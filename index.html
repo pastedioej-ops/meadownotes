@@ -11910,6 +11910,38 @@ setupTrashCan();
 loadCloudNotes().then(() => uploadPendingAttachments());
 syncToSupabase();
 
+/* =========================================================
+   "someone wandered in" — anonymous visit ping.
+   One fire-and-forget event per page load. Sends ONLY
+   { event: "site_visit" } to the server-side Edge Function;
+   the timestamp is stamped server-side. No IP, user-agent,
+   cookies, storage, fingerprint, location, or identity is
+   read or sent. No Telegram token or secret lives here — the
+   function URL is derived from the already-public project ref.
+   Failures are swallowed so this can never interfere with
+   notes, sync, attachments, Mary, or offline use.
+========================================================= */
+const VISIT_NOTIFY_FUNCTION = "visit-notify";
+let visitPingSent = false;
+
+function sendVisitPing() {
+    if (visitPingSent)
+        return;
+    visitPingSent = true;
+
+    try {
+        supabaseClient.functions
+            .invoke(VISIT_NOTIFY_FUNCTION, {
+                body: { event: "site_visit" }
+            })
+            .catch(() => {});
+    } catch (error) {
+        /* offline or unavailable — ignore */
+    }
+}
+
+sendVisitPing();
+
 </script>
 
 
