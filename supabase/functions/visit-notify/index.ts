@@ -12,24 +12,19 @@
 
 const TELEGRAM_API = "https://api.telegram.org";
 
-// Format a Date as Asia/Manila (PHT, UTC+8): "2026-09-24 14:03:05 PHT".
+// Format a Date as Asia/Manila (PHT) in 12-hour time, e.g.
+// "Sep 25, 2026 at 8:32 PM PHT".
 function manilaTimestamp(date: Date): string {
-  const parts = new Intl.DateTimeFormat("en-GB", {
+  const when = new Intl.DateTimeFormat("en-US", {
     timeZone: "Asia/Manila",
     year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
     minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  }).formatToParts(date);
-
-  const get = (type: string) =>
-    parts.find((p) => p.type === type)?.value ?? "";
-
-  const hh = get("hour") === "24" ? "00" : get("hour");
-  return `${get("year")}-${get("month")}-${get("day")} ${hh}:${get("minute")}:${get("second")} PHT`;
+    hour12: true,
+  }).format(date);
+  return `${when} PHT`;
 }
 
 const CORS_HEADERS = {

@@ -4448,6 +4448,318 @@ body.dark .mary-reader-attachments .attachment-card-meta {
     color: #9fb795;
 }
 
+/* =========================================================
+   ✿ THE LITTLE DRAWER — a quiet decorative object at the
+     base of the sidebar. Reads as part of the furniture,
+     not a labeled feature. Self-contained; touches nothing.
+========================================================= */
+.hidden-drawer {
+    margin-top: 14px;
+    height: 15px;
+    border-radius: 9px;
+    border: 1px solid rgba(72,102,64,.16);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,253,248,.34),
+            rgba(167,189,158,.20)
+        );
+    box-shadow:
+        inset 0 1px 1px rgba(255,255,255,.55),
+        inset 0 -2px 4px rgba(72,102,64,.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: .5;
+    transition:
+        transform .28s cubic-bezier(.2,.8,.2,1),
+        opacity .28s ease,
+        box-shadow .28s ease;
+}
+
+.hidden-drawer:hover {
+    opacity: .92;
+    transform: translateY(2px);
+    box-shadow:
+        inset 0 1px 1px rgba(255,255,255,.6),
+        inset 0 -3px 6px rgba(72,102,64,.16),
+        0 4px 10px var(--shadow);
+}
+
+.hidden-drawer:focus-visible {
+    outline: 2px solid rgba(113,140,105,.45);
+    outline-offset: 3px;
+}
+
+.hidden-drawer-knob {
+    width: 20px;
+    height: 4px;
+    border-radius: 4px;
+    background: rgba(72,102,64,.34);
+    box-shadow: 0 1px 1px rgba(255,255,255,.5);
+    transition: background .4s ease;
+}
+
+.hidden-drawer.is-open {
+    transform: translateY(5px);
+    opacity: .95;
+    box-shadow:
+        inset 0 2px 5px rgba(72,102,64,.22),
+        0 1px 2px rgba(255,255,255,.4);
+}
+
+/* already-found: a faint, quiet telling — never a label */
+.hidden-drawer.is-found {
+    opacity: .4;
+}
+
+.hidden-drawer.is-found .hidden-drawer-knob {
+    background: rgba(217,154,174,.5);
+}
+
+.hidden-drawer.is-found:hover {
+    opacity: .8;
+}
+
+body.dark .hidden-drawer {
+    border-color: rgba(195,229,182,.14);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(23,39,31,.5),
+            rgba(8,17,13,.42)
+        );
+    box-shadow:
+        inset 0 1px 1px rgba(195,229,182,.12),
+        inset 0 -2px 4px rgba(0,0,0,.45);
+}
+
+body.dark .hidden-drawer-knob {
+    background: rgba(195,229,182,.32);
+}
+
+body.dark .hidden-drawer.is-found .hidden-drawer-knob {
+    background: rgba(217,156,175,.45);
+}
+
+/* the slip of paper that slides out — small, warm, tilted */
+.drawer-slip-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 700;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(25,35,25,.26);
+    backdrop-filter: blur(5px);
+}
+
+.drawer-slip-overlay.is-open {
+    display: flex;
+    animation: drawerSlipFade .35s ease both;
+}
+
+.drawer-slip {
+    position: relative;
+    max-width: 330px;
+    padding: 30px 26px 24px;
+    background:
+        linear-gradient(
+            180deg,
+            var(--cream),
+            rgba(255,248,223,.92)
+        );
+    color: var(--text-main);
+    border: 1px solid rgba(255,255,255,.7);
+    border-radius: 5px;
+    box-shadow:
+        0 20px 44px var(--shadow),
+        inset 0 1px 0 rgba(255,255,255,.7);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 14px;
+    line-height: 1.85;
+    text-align: center;
+    transform: rotate(-.7deg);
+    animation: drawerSlipRise .42s cubic-bezier(.2,.8,.2,1) both;
+}
+
+/* faint fold crease down the middle of the slip */
+.drawer-slip::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: rgba(72,102,64,.10);
+    transform: translateX(-.5px);
+}
+
+.drawer-slip-text {
+    margin: 0;
+    font-style: italic;
+}
+
+.drawer-slip-text em {
+    display: block;
+    margin-top: 10px;
+    font-style: italic;
+    color: var(--dark-green);
+}
+
+.drawer-slip-mark {
+    display: block;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--soft-green);
+    opacity: .8;
+}
+
+body.dark .drawer-slip {
+    background:
+        linear-gradient(
+            180deg,
+            #1d2f24,
+            rgba(20,34,26,.94)
+        );
+    border-color: rgba(195,229,182,.18);
+    color: var(--text-main);
+}
+
+body.dark .drawer-slip-text em {
+    color: var(--dark-green);
+}
+
+@keyframes drawerSlipFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes drawerSlipRise {
+    from {
+        opacity: 0;
+        transform: translateY(12px) rotate(-.7deg) scale(.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) rotate(-.7deg) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hidden-drawer,
+    .drawer-slip,
+    .drawer-slip-overlay.is-open {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* =========================================================
+   Archive archaeology — a stray fragment wedged into the
+   archive. Aged, quiet, slightly imperfect. No modal, no
+   backdrop, nothing that announces itself.
+========================================================= */
+.archive-fragment {
+    display: none;
+    position: relative;
+    max-width: 320px;
+    margin: 16px 0 8px;
+    padding: 16px 20px 15px;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,248,223,.95),
+            rgba(248,241,219,.88)
+        );
+    border: 1px solid rgba(126,141,122,.26);
+    border-radius: 2px;
+    box-shadow: 0 6px 16px var(--shadow);
+    font-family: Georgia, "Times New Roman", serif;
+    color: var(--muted);
+    transform: rotate(-.5deg);
+}
+
+.archive-fragment.is-visible {
+    display: block;
+    animation: archiveFragmentSettle .3s ease both;
+}
+
+.archive-fragment-text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.9;
+    font-style: italic;
+}
+
+.archive-fragment-ref {
+    display: block;
+    margin-top: 13px;
+    font-size: 10px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--soft-green);
+    opacity: .5;
+}
+
+.archive-fragment-close {
+    position: absolute;
+    top: 5px;
+    right: 7px;
+    padding: 2px 5px;
+    border: none;
+    background: none;
+    font-size: 12px;
+    line-height: 1;
+    color: var(--muted);
+    opacity: .35;
+    cursor: pointer;
+}
+
+.archive-fragment-close:hover {
+    opacity: .75;
+}
+
+/* faint pencil mark once it has been catalogued */
+.archive-fragment.is-found::after {
+    content: "✓";
+    position: absolute;
+    bottom: 9px;
+    right: 13px;
+    font-size: 11px;
+    color: var(--soft-green);
+    opacity: .3;
+}
+
+body.dark .archive-fragment {
+    background:
+        linear-gradient(
+            180deg,
+            #1d2f24,
+            rgba(20,34,26,.92)
+        );
+    border-color: rgba(195,229,182,.16);
+}
+
+@keyframes archiveFragmentSettle {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) rotate(-.5deg);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) rotate(-.5deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .archive-fragment.is-visible {
+        animation: none !important;
+    }
+}
+
 </style>
 
 </head>
@@ -4640,6 +4952,19 @@ body.dark .mary-reader-attachments .attachment-card-meta {
 
     </button>
 
+    <div
+        class="hidden-drawer"
+        id="hiddenDrawer"
+        role="button"
+        tabindex="0"
+        aria-label="a small drawer"
+        onclick="openHiddenDrawer()"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openHiddenDrawer();}">
+
+        <span class="hidden-drawer-knob"></span>
+
+    </div>
+
 </aside>
 
 
@@ -4810,9 +5135,28 @@ body.dark .mary-reader-attachments .attachment-card-meta {
 
 <div class="notes-header">
 
-    <h2>
+    <h2 onclick="revealArchiveFragment()">
         hala maleak akong kacute
     </h2>
+
+</div>
+
+
+<!-- a stray fragment, wedged into the archive -->
+<div
+    class="archive-fragment"
+    id="archiveFragment"
+    aria-hidden="true">
+
+    <button
+        class="archive-fragment-close"
+        type="button"
+        aria-label="put it back"
+        onclick="closeArchiveFragment()">✕</button>
+
+    <p class="archive-fragment-text">found this in the archive.<br><br>no idea when it got here.<br><br>leaving it.</p>
+
+    <span class="archive-fragment-ref">unfiled</span>
 
 </div>
 
@@ -5237,6 +5581,37 @@ body.dark .mary-reader-attachments .attachment-card-meta {
             </button>
 
         </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     THE LITTLE DRAWER — what slides out when it's opened
+===================================================== -->
+
+<div
+    class="drawer-slip-overlay"
+    id="drawerSlip"
+    aria-hidden="true"
+    onclick="closeHiddenDrawer(event)">
+
+    <div
+        class="drawer-slip"
+        role="dialog"
+        aria-label="a folded slip of paper">
+
+        <p class="drawer-slip-text">
+            well.
+            <br>
+            you found the drawer.
+            <br>
+            that wasn't supposed to happen.
+            <em>carry on.</em>
+        </p>
+
+        <span class="drawer-slip-mark">✦</span>
 
     </div>
 
@@ -11901,6 +12276,149 @@ document.addEventListener(
     },
     true
 );
+
+/* =========================================================
+   ✿ THE LITTLE DRAWER
+   Purely local + decorative. No notes, no Mary, no Supabase.
+========================================================= */
+const HIDDEN_DRAWER_KEY = "hiddenDrawerFound";
+
+function hiddenDrawerIsFound() {
+    try {
+        return localStorage.getItem(HIDDEN_DRAWER_KEY) === "1";
+    } catch (error) {
+        return false;
+    }
+}
+
+function applyHiddenDrawerState() {
+    const drawer = document.getElementById("hiddenDrawer");
+    if (drawer) {
+        drawer.classList.toggle("is-found", hiddenDrawerIsFound());
+    }
+}
+
+function openHiddenDrawer() {
+    const slip = document.getElementById("drawerSlip");
+    const drawer = document.getElementById("hiddenDrawer");
+    if (!slip)
+        return;
+
+    slip.classList.add("is-open");
+    slip.setAttribute("aria-hidden", "false");
+
+    if (drawer)
+        drawer.classList.add("is-open");
+
+    if (!hiddenDrawerIsFound()) {
+        try {
+            localStorage.setItem(HIDDEN_DRAWER_KEY, "1");
+        } catch (error) {}
+        applyHiddenDrawerState();
+    }
+}
+
+function closeHiddenDrawer(event) {
+    if (
+        event &&
+        event.target &&
+        event.target.closest &&
+        event.target.closest(".drawer-slip")
+    )
+        return;
+
+    const slip = document.getElementById("drawerSlip");
+    const drawer = document.getElementById("hiddenDrawer");
+
+    if (slip) {
+        slip.classList.remove("is-open");
+        slip.setAttribute("aria-hidden", "true");
+    }
+
+    if (drawer)
+        drawer.classList.remove("is-open");
+}
+
+document.addEventListener(
+    "keydown",
+    function (event) {
+        if (event.key !== "Escape")
+            return;
+
+        const slip = document.getElementById("drawerSlip");
+        if (slip && slip.classList.contains("is-open"))
+            closeHiddenDrawer();
+    }
+);
+
+applyHiddenDrawerState();
+
+/* =========================================================
+   SECRET DISCOVERY #2 — ARCHIVE ARCHAEOLOGY
+   A stray fragment wedged into the archive, uncovered by
+   clicking the archive header. Purely local + decorative.
+   No notes, no Mary, no Hidden Drawer, no Supabase, no
+   network, no database. localStorage only.
+========================================================= */
+const ARCHIVE_ARCHAEOLOGY_KEY = "archiveArchaeologyFound";
+
+function archiveArchaeologyIsFound() {
+    try {
+        return localStorage.getItem(ARCHIVE_ARCHAEOLOGY_KEY) === "1";
+    } catch (error) {
+        return false;
+    }
+}
+
+function applyArchiveFragmentState() {
+    const fragment = document.getElementById("archiveFragment");
+    if (fragment) {
+        fragment.classList.toggle("is-found", archiveArchaeologyIsFound());
+    }
+}
+
+function revealArchiveFragment() {
+    const fragment = document.getElementById("archiveFragment");
+    if (!fragment)
+        return;
+
+    if (fragment.classList.contains("is-visible")) {
+        closeArchiveFragment();
+        return;
+    }
+
+    fragment.classList.add("is-visible");
+    fragment.setAttribute("aria-hidden", "false");
+
+    if (!archiveArchaeologyIsFound()) {
+        try {
+            localStorage.setItem(ARCHIVE_ARCHAEOLOGY_KEY, "1");
+        } catch (error) {}
+        applyArchiveFragmentState();
+    }
+}
+
+function closeArchiveFragment() {
+    const fragment = document.getElementById("archiveFragment");
+    if (fragment) {
+        fragment.classList.remove("is-visible");
+        fragment.setAttribute("aria-hidden", "true");
+    }
+}
+
+document.addEventListener(
+    "keydown",
+    function (event) {
+        if (event.key !== "Escape")
+            return;
+
+        const fragment = document.getElementById("archiveFragment");
+        if (fragment && fragment.classList.contains("is-visible"))
+            closeArchiveFragment();
+    }
+);
+
+applyArchiveFragmentState();
 
 loadEditorPhotos(null);
 loadDraft();
