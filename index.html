@@ -4760,6 +4760,444 @@ body.dark .archive-fragment {
     }
 }
 
+/* =========================================================
+   ✿ "the things i remember" — scattered photo wall.
+   Fully local + self-contained. No notes, no Mary, no
+   Supabase. Aesthetic mirrors the warm cream / sage paper
+   of the archive: imperfect, cozy, taped-to-the-wall.
+========================================================= */
+
+body.mw-open {
+    overflow: hidden;
+}
+
+.memory-wall {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    display: none;
+}
+
+.memory-wall.is-open {
+    display: block;
+    animation: mwFadeIn .4s ease both;
+}
+
+@keyframes mwFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.mw-paper {
+    position: absolute;
+    inset: 0;
+    overflow: auto;
+    padding: 26px clamp(16px, 4vw, 46px) 60px;
+    background:
+        radial-gradient(circle at 12% 8%, rgba(167,189,158,.20), transparent 34%),
+        radial-gradient(circle at 88% 92%, rgba(217,154,174,.10), transparent 30%),
+        linear-gradient(168deg, #fdf8ec 0%, #f6efdd 46%, #eef0e0 100%);
+    color: var(--text-main);
+}
+
+/* faint paper grain */
+.mw-paper::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: .5;
+    background-image:
+        radial-gradient(circle, rgba(120,140,110,.05) 0 1px, transparent 1.6px);
+    background-size: 7px 7px;
+}
+
+.mw-head {
+    position: relative;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.mw-title {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(26px, 5vw, 40px);
+    line-height: 1.05;
+    color: var(--dark-green);
+    margin: 0;
+    letter-spacing: .01em;
+}
+
+.mw-subtitle {
+    margin: 7px 0 0;
+    font-size: 12.5px;
+    letter-spacing: .04em;
+    color: var(--muted);
+}
+
+.mw-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mw-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 15px;
+    border: 1px dashed rgba(72,102,64,.42);
+    border-radius: 999px;
+    background: rgba(255,253,248,.6);
+    color: var(--dark-green);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: transform .18s ease, background .18s ease, border-color .18s ease;
+}
+
+.mw-add:hover {
+    transform: translateY(-1px);
+    background: rgba(255,253,248,.92);
+    border-color: rgba(72,102,64,.62);
+}
+
+.mw-add .mw-plus {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.mw-close {
+    padding: 8px 12px;
+    border: 1px solid rgba(72,102,64,.22);
+    border-radius: 10px;
+    background: rgba(255,253,248,.5);
+    color: var(--muted);
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: .04em;
+    cursor: pointer;
+    transition: background .18s ease, color .18s ease;
+}
+
+.mw-close:hover {
+    background: rgba(255,253,248,.9);
+    color: var(--dark-green);
+}
+
+.mw-status {
+    max-width: 1100px;
+    margin: 12px auto 0;
+    min-height: 16px;
+    font-size: 12px;
+    letter-spacing: .03em;
+    color: var(--muted);
+}
+
+.mw-status.is-error {
+    color: #b5646b;
+}
+
+/* the board photos are scattered across */
+.mw-board {
+    position: relative;
+    max-width: 1100px;
+    margin: 10px auto 0;
+    min-height: 74vh;
+}
+
+.mw-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.mw-empty .mw-empty-mark {
+    font-size: 26px;
+    opacity: .55;
+}
+
+/* tiny corner doodles */
+.mw-doodle {
+    position: absolute;
+    pointer-events: none;
+    opacity: .30;
+    font-size: 20px;
+    user-select: none;
+}
+
+.mw-doodle.d1 { top: 4px; left: 2%; transform: rotate(-12deg); }
+.mw-doodle.d2 { bottom: 8px; right: 4%; transform: rotate(9deg); }
+.mw-doodle.d3 { top: 40%; right: 1%; transform: rotate(-6deg); font-size: 15px; }
+
+/* a single taped-up polaroid */
+.mw-photo {
+    position: absolute;
+    width: 190px;
+    padding: 11px 11px 30px;
+    background: #fffef9;
+    border-radius: 3px;
+    box-shadow:
+        0 7px 18px rgba(60,80,55,.16),
+        0 1px 2px rgba(0,0,0,.10);
+    cursor: grab;
+    touch-action: none;
+    transition: box-shadow .2s ease;
+    will-change: left, top;
+}
+
+.mw-photo::before {
+    /* washi tape */
+    content: "";
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    width: 74px;
+    height: 23px;
+    transform: translateX(-50%) rotate(-3deg);
+    background: rgba(199,214,186,.55);
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    border-left: 1px solid rgba(255,255,255,.35);
+    border-right: 1px solid rgba(255,255,255,.35);
+}
+
+.mw-photo:nth-of-type(3n)::before {
+    transform: translateX(-50%) rotate(4deg);
+    background: rgba(226,205,168,.5);
+}
+
+.mw-photo:nth-of-type(4n)::before {
+    transform: translateX(-52%) rotate(-7deg);
+    background: rgba(214,178,190,.42);
+}
+
+.mw-photo:hover {
+    box-shadow:
+        0 12px 26px rgba(60,80,55,.22),
+        0 2px 4px rgba(0,0,0,.12);
+}
+
+.mw-photo.is-dragging {
+    cursor: grabbing;
+    z-index: 20;
+    box-shadow: 0 18px 34px rgba(60,80,55,.28);
+}
+
+.mw-photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 2px;
+    background: #eee7d6;
+    pointer-events: none;
+}
+
+.mw-photo .mw-cap {
+    margin-top: 9px;
+    min-height: 15px;
+    text-align: center;
+    font-family: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+    font-size: 12.5px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* -------- lightbox -------- */
+.mw-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(24,32,24,.66);
+}
+
+.mw-lightbox.is-open {
+    display: flex;
+    animation: mwFadeIn .22s ease both;
+}
+
+.mw-lb-card {
+    position: relative;
+    width: min(94vw, 640px);
+    max-height: 90vh;
+    overflow: auto;
+    padding: 16px 16px 20px;
+    background: #fffdf6;
+    border-radius: 6px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.42);
+}
+
+.mw-lb-card img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 3px;
+    background: #eee7d6;
+}
+
+.mw-lb-fields {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mw-lb-card textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(72,102,64,.22);
+    border-radius: 8px;
+    background: rgba(255,253,248,.7);
+    color: var(--text-main);
+    font-family: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+    font-size: 14px;
+    padding: 9px 11px;
+    resize: vertical;
+}
+
+.mw-lb-card textarea:focus {
+    outline: none;
+    border-color: rgba(72,102,64,.5);
+    background: #fffef9;
+}
+
+.mw-lb-label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 11px;
+    letter-spacing: .05em;
+    text-transform: lowercase;
+    color: var(--muted);
+}
+
+.mw-lb-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.mw-lb-btn {
+    padding: 8px 14px;
+    border-radius: 9px;
+    border: 1px solid rgba(72,102,64,.24);
+    background: rgba(255,253,248,.6);
+    color: var(--dark-green);
+    font: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease;
+}
+
+.mw-lb-btn:hover {
+    background: rgba(255,253,248,.95);
+    border-color: rgba(72,102,64,.45);
+}
+
+.mw-lb-btn.danger {
+    color: #a8565e;
+    border-color: rgba(168,86,94,.28);
+}
+
+.mw-lb-btn.danger:hover {
+    background: rgba(168,86,94,.10);
+    border-color: rgba(168,86,94,.5);
+}
+
+/* -------- dark mode -------- */
+body.dark .mw-paper {
+    background:
+        radial-gradient(circle at 12% 8%, rgba(120,180,120,.10), transparent 34%),
+        linear-gradient(168deg, #0c1a13 0%, #12241a 52%, #16301f 100%);
+    color: var(--text-main);
+}
+
+body.dark .mw-paper::before {
+    background-image:
+        radial-gradient(circle, rgba(180,220,170,.05) 0 1px, transparent 1.6px);
+}
+
+body.dark .mw-photo,
+body.dark .mw-lb-card {
+    background: #16241c;
+    box-shadow: 0 8px 20px rgba(0,0,0,.5);
+}
+
+body.dark .mw-photo img,
+body.dark .mw-lb-card img {
+    background: #0f1a14;
+}
+
+body.dark .mw-add,
+body.dark .mw-close,
+body.dark .mw-lb-btn {
+    background: rgba(23,39,31,.6);
+    border-color: rgba(195,229,182,.22);
+}
+
+body.dark .mw-lb-card textarea {
+    background: rgba(15,26,20,.7);
+    border-color: rgba(195,229,182,.2);
+    color: var(--text-main);
+}
+
+/* -------- small screens: stacked scatter, no drag -------- */
+@media (max-width: 640px) {
+    .mw-board {
+        position: static;
+        min-height: 0;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 18px 14px;
+        padding-top: 10px;
+    }
+
+    .mw-photo {
+        position: static !important;
+        left: auto !important;
+        top: auto !important;
+        width: 43%;
+        min-width: 130px;
+        cursor: default;
+        touch-action: auto;
+    }
+
+    .mw-empty {
+        position: static;
+        padding: 40px 0;
+    }
+
+    .mw-doodle { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .memory-wall.is-open,
+    .mw-lightbox.is-open {
+        animation: none !important;
+    }
+}
+
 </style>
 
 </head>
@@ -4949,6 +5387,17 @@ body.dark .archive-fragment {
 
         <span>✉ kababalaghan</span>
         <span class="mary-entry-icon">⌁</span>
+
+    </button>
+
+    <button
+        class="mary-entry-point"
+        type="button"
+        onclick="openMemoryWall()"
+        aria-label="Open mga kandado pics ni keyomi">
+
+        <span>🖼 mga kandado pics ni keyomi</span>
+        <span class="mary-entry-icon">✧</span>
 
     </button>
 
@@ -5761,6 +6210,143 @@ body.dark .archive-fragment {
                     </div>
 
                 </article>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     "the things i remember" — scattered photo wall.
+     Local-only (IndexedDB). Isolated from notes/Mary/sync.
+===================================================== -->
+
+<div
+    class="memory-wall"
+    id="memoryWall"
+    role="dialog"
+    aria-modal="true"
+    aria-label="a gallery of things i remember about you"
+    aria-hidden="true">
+
+    <div class="mw-paper">
+
+        <div class="mw-head">
+
+            <div>
+                <h2 class="mw-title">a gallery of things i remember about you</h2>
+                <p class="mw-subtitle">a little wall where the moments pile up</p>
+            </div>
+
+            <div class="mw-head-actions">
+
+                <button
+                    class="mw-add"
+                    type="button"
+                    id="mwAddBtn"
+                    onclick="mwPickFiles()">
+
+                    <span class="mw-plus">＋</span>
+                    <span>add a photo</span>
+
+                </button>
+
+                <button
+                    class="mw-close"
+                    type="button"
+                    onclick="closeMemoryWall()">
+
+                    close
+
+                </button>
+
+            </div>
+
+        </div>
+
+        <div
+            class="mw-status"
+            id="mwStatus"
+            role="status"
+            aria-live="polite"></div>
+
+        <input
+            type="file"
+            id="mwFileInput"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            hidden>
+
+        <div
+            class="mw-board"
+            id="mwBoard">
+
+            <span class="mw-doodle d1" aria-hidden="true">🌿</span>
+            <span class="mw-doodle d2" aria-hidden="true">✿</span>
+            <span class="mw-doodle d3" aria-hidden="true">✦</span>
+
+            <div
+                class="mw-empty"
+                id="mwEmpty">
+
+                <span class="mw-empty-mark">🖼</span>
+                <span>nothing pinned up yet — tap “add a photo”</span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div
+        class="mw-lightbox"
+        id="mwLightbox"
+        aria-hidden="true">
+
+        <div
+            class="mw-lb-card"
+            id="mwLbCard"
+            role="dialog"
+            aria-modal="true">
+
+            <img
+                id="mwLbImage"
+                alt="">
+
+            <div class="mw-lb-fields">
+
+                <div>
+                    <label class="mw-lb-label" for="mwLbCaption">caption</label>
+                    <textarea
+                        id="mwLbCaption"
+                        rows="2"
+                        placeholder="write something small…"></textarea>
+                </div>
+
+            </div>
+
+            <div class="mw-lb-actions">
+
+                <button
+                    class="mw-lb-btn danger"
+                    type="button"
+                    id="mwLbDelete">
+
+                    delete
+
+                </button>
+
+                <button
+                    class="mw-lb-btn"
+                    type="button"
+                    id="mwLbClose">
+
+                    close
+
+                </button>
 
             </div>
 
@@ -12459,6 +13045,642 @@ function sendVisitPing() {
 }
 
 sendVisitPing();
+
+/* =========================================================
+   🖼 "the things i remember" — scattered photo wall.
+   Fully local + self-contained: image blobs AND metadata live
+   in a dedicated IndexedDB database ("memory-wall"). It never
+   touches notes, drafts, history, deleted-note handling, Mary,
+   or Supabase sync.
+
+   To add cross-device persistence later, reimplement the five
+   MemoryWallStore methods against Supabase (bytes -> a storage
+   bucket, metadata -> a table). Nothing else in the wall needs
+   to change — it only ever talks to this interface.
+========================================================= */
+
+const MemoryWallStore = (function () {
+    const DB_NAME = "memory-wall";
+    const DB_VERSION = 1;
+    const STORE = "photos";
+    let dbPromise = null;
+
+    function openDb() {
+        if (dbPromise)
+            return dbPromise;
+
+        dbPromise = new Promise((resolve, reject) => {
+            const req = indexedDB.open(DB_NAME, DB_VERSION);
+            req.onupgradeneeded = () => {
+                const db = req.result;
+                if (!db.objectStoreNames.contains(STORE))
+                    db.createObjectStore(STORE, { keyPath: "id" });
+            };
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+
+        return dbPromise;
+    }
+
+    return {
+        async list() {
+            const db = await openDb();
+            return new Promise((resolve, reject) => {
+                const req = db
+                    .transaction(STORE, "readonly")
+                    .objectStore(STORE)
+                    .getAll();
+                req.onsuccess = () =>
+                    resolve(
+                        (req.result || []).sort(
+                            (a, b) => (a.created || 0) - (b.created || 0)
+                        )
+                    );
+                req.onerror = () => reject(req.error);
+            });
+        },
+
+        async put(record) {
+            const db = await openDb();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE, "readwrite");
+                tx.objectStore(STORE).put(record);
+                tx.oncomplete = () => resolve(record);
+                tx.onerror = () => reject(tx.error);
+                tx.onabort = () => reject(tx.error || new Error("aborted"));
+            });
+        },
+
+        async get(id) {
+            const db = await openDb();
+            return new Promise((resolve, reject) => {
+                const req = db
+                    .transaction(STORE, "readonly")
+                    .objectStore(STORE)
+                    .get(id);
+                req.onsuccess = () => resolve(req.result || null);
+                req.onerror = () => reject(req.error);
+            });
+        },
+
+        /* get + put issued inside one transaction, synchronously chained
+           in onsuccess so the tx cannot auto-commit between the two. */
+        async update(id, patch) {
+            const db = await openDb();
+            return new Promise((resolve, reject) => {
+                let result = null;
+                const tx = db.transaction(STORE, "readwrite");
+                const store = tx.objectStore(STORE);
+                const getReq = store.get(id);
+                getReq.onsuccess = () => {
+                    const existing = getReq.result;
+                    if (!existing)
+                        return;
+                    result = { ...existing, ...patch, id: existing.id };
+                    store.put(result);
+                };
+                tx.oncomplete = () => resolve(result);
+                tx.onerror = () => reject(tx.error);
+                tx.onabort = () => reject(tx.error || new Error("aborted"));
+            });
+        },
+
+        async remove(id) {
+            const db = await openDb();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE, "readwrite");
+                tx.objectStore(STORE).delete(id);
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+                tx.onabort = () => reject(tx.error || new Error("aborted"));
+            });
+        }
+    };
+})();
+
+let memoryWallOpen = false;
+let mwItems = [];
+let mwUrls = new Map();
+let mwLightboxId = null;
+let mwDrag = null;
+let mwResizeTimer = null;
+
+const MW_MAX_SIZE = 8 * 1024 * 1024;
+const MW_ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
+
+function mwId() {
+    return "mw-" +
+        Date.now().toString(36) + "-" +
+        Math.random().toString(36).slice(2, 8);
+}
+
+function mwIsMobile() {
+    return window.matchMedia("(max-width: 640px)").matches;
+}
+
+function mwSetStatus(message, isError) {
+    const el = document.getElementById("mwStatus");
+    if (!el)
+        return;
+    el.textContent = message || "";
+    el.classList.toggle("is-error", !!isError);
+}
+
+function mwUrlFor(item) {
+    if (!item || !item.id)
+        return null;
+    if (mwUrls.has(item.id))
+        return mwUrls.get(item.id);
+    if (!item.blob)
+        return null;
+    const url = URL.createObjectURL(item.blob);
+    mwUrls.set(item.id, url);
+    return url;
+}
+
+function mwRevokeUrl(id) {
+    const url = mwUrls.get(id);
+    if (url) {
+        URL.revokeObjectURL(url);
+        mwUrls.delete(id);
+    }
+}
+
+function mwRevokeAllUrls() {
+    mwUrls.forEach(url => URL.revokeObjectURL(url));
+    mwUrls.clear();
+}
+
+async function openMemoryWall() {
+    const wall = document.getElementById("memoryWall");
+    if (!wall)
+        return;
+
+    memoryWallOpen = true;
+    wall.classList.add("is-open");
+    wall.setAttribute("aria-hidden", "false");
+    document.body.classList.add("mw-open");
+    mwSetStatus("");
+    await mwRender();
+}
+
+function closeMemoryWall() {
+    const wall = document.getElementById("memoryWall");
+    if (!wall)
+        return;
+
+    mwCloseLightbox();
+    memoryWallOpen = false;
+    wall.classList.remove("is-open");
+    wall.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("mw-open");
+    mwRevokeAllUrls();
+}
+
+/* pick a random, lightly de-overlapped spot for a new photo */
+function mwRandomPlacement(existing) {
+    const w = 150 + Math.floor(Math.random() * 90);
+    const rot = Math.random() * 12 - 6;
+    let best = null;
+
+    for (let attempt = 0; attempt < 30; attempt++) {
+        const x = 1 + Math.random() * 70;
+        const y = 1 + Math.random() * 74;
+
+        let minDist = Infinity;
+        (existing || []).forEach(p => {
+            const dx = (Number(p.x) || 0) - x;
+            const dy = ((Number(p.y) || 0) - y) * 1.3;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d < minDist)
+                minDist = d;
+        });
+
+        const candidate = { x, y, w, rot, minDist };
+
+        if (!existing || !existing.length || minDist >= 17)
+            return candidate;
+
+        if (!best || candidate.minDist > best.minDist)
+            best = candidate;
+    }
+
+    return best || { x: 5, y: 5, w, rot };
+}
+
+/* keep cards fully inside the board (positions are % of board) */
+function mwClampCards() {
+    if (mwIsMobile())
+        return;
+
+    const board = document.getElementById("mwBoard");
+    if (!board)
+        return;
+
+    const bw = board.clientWidth;
+    const bh = board.clientHeight;
+    if (!bw || !bh)
+        return;
+
+    board.querySelectorAll(".mw-photo").forEach(card => {
+        const cw = card.offsetWidth;
+        const ch = card.offsetHeight;
+        const maxLeftPct = Math.max(0, ((bw - cw) / bw) * 100);
+        const maxTopPct = Math.max(0, ((bh - ch) / bh) * 100);
+        const left = Math.min(Math.max(0, parseFloat(card.style.left) || 0), maxLeftPct);
+        const top = Math.min(Math.max(0, parseFloat(card.style.top) || 0), maxTopPct);
+        card.style.left = left + "%";
+        card.style.top = top + "%";
+    });
+}
+
+async function mwRender() {
+    const board = document.getElementById("mwBoard");
+    if (!board)
+        return;
+
+    try {
+        mwItems = await MemoryWallStore.list();
+    } catch (err) {
+        console.error("memory wall load failed:", err);
+        mwSetStatus("couldn't load your photos", true);
+        return;
+    }
+
+    board.querySelectorAll(".mw-photo").forEach(el => el.remove());
+
+    const empty = document.getElementById("mwEmpty");
+    if (empty)
+        empty.style.display = mwItems.length ? "none" : "";
+
+    const mobile = mwIsMobile();
+
+    mwItems.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "mw-photo";
+        card.dataset.id = item.id;
+        card.tabIndex = 0;
+        card.setAttribute("role", "button");
+        card.setAttribute(
+            "aria-label",
+            item.caption ? "photo: " + item.caption : "photo"
+        );
+
+        const img = document.createElement("img");
+        const url = mwUrlFor(item);
+        if (url)
+            img.src = url;
+        img.alt = item.caption || "a remembered photo";
+        img.loading = "lazy";
+        card.appendChild(img);
+
+        const cap = document.createElement("div");
+        cap.className = "mw-cap";
+        cap.textContent = item.caption || "";
+        card.appendChild(cap);
+
+        card.style.transform = "rotate(" + (Number(item.rot) || 0) + "deg)";
+
+        if (!mobile) {
+            card.style.width = (Number(item.w) || 190) + "px";
+            card.style.left = (Number(item.x) || 0) + "%";
+            card.style.top = (Number(item.y) || 0) + "%";
+        }
+
+        card.addEventListener("keydown", e => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                mwOpenLightbox(item.id);
+            }
+        });
+
+        board.appendChild(card);
+    });
+
+    mwClampCards();
+}
+
+function mwPickFiles() {
+    const input = document.getElementById("mwFileInput");
+    if (input)
+        input.click();
+}
+
+async function mwHandleFiles(fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length)
+        return;
+
+    let added = 0;
+    const skipped = [];
+
+    for (const file of files) {
+        if (!MW_ACCEPTED.includes(file.type)) {
+            skipped.push(file.name + " (unsupported type)");
+            continue;
+        }
+
+        if (file.size > MW_MAX_SIZE) {
+            skipped.push(file.name + " (over 8MB)");
+            continue;
+        }
+
+        mwSetStatus("adding " + file.name + "…");
+
+        try {
+            const placement = mwRandomPlacement(mwItems);
+            const record = {
+                id: mwId(),
+                blob: file,
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                caption: "",
+                rot: placement.rot,
+                w: placement.w,
+                x: placement.x,
+                y: placement.y,
+                created: Date.now() + added
+            };
+
+            await MemoryWallStore.put(record);
+            mwItems.push(record);
+            added++;
+        } catch (err) {
+            console.error("memory wall save failed:", err);
+            skipped.push(file.name + " (save failed)");
+        }
+    }
+
+    await mwRender();
+
+    if (added && skipped.length)
+        mwSetStatus("added " + added + " · skipped " + skipped.join(", "), true);
+    else if (added)
+        mwSetStatus("added " + added + (added === 1 ? " photo" : " photos"));
+    else if (skipped.length)
+        mwSetStatus("couldn't add " + skipped.join(", "), true);
+    else
+        mwSetStatus("");
+}
+
+function mwOpenLightbox(id) {
+    const item = mwItems.find(i => i.id === id);
+    if (!item)
+        return;
+
+    const lb = document.getElementById("mwLightbox");
+    const img = document.getElementById("mwLbImage");
+    const cap = document.getElementById("mwLbCaption");
+    if (!lb || !img || !cap)
+        return;
+
+    mwLightboxId = id;
+
+    const url = mwUrlFor(item);
+    if (url)
+        img.src = url;
+    img.alt = item.caption || "a remembered photo";
+    cap.value = item.caption || "";
+
+    lb.classList.add("is-open");
+    lb.setAttribute("aria-hidden", "false");
+    window.setTimeout(() => cap.focus(), 40);
+}
+
+function mwCloseLightbox() {
+    /* commit any in-progress caption edit before hiding so a
+       backdrop click or Escape never throws away typed text */
+    if (mwLightboxId)
+        mwCommitLightboxFields();
+
+    const lb = document.getElementById("mwLightbox");
+    if (lb) {
+        lb.classList.remove("is-open");
+        lb.setAttribute("aria-hidden", "true");
+    }
+
+    const img = document.getElementById("mwLbImage");
+    if (img)
+        img.removeAttribute("src");
+
+    mwLightboxId = null;
+}
+
+async function mwCommitLightboxFields() {
+    if (!mwLightboxId)
+        return;
+
+    const cap = document.getElementById("mwLbCaption");
+    if (!cap)
+        return;
+
+    const caption = cap.value.trim();
+    const id = mwLightboxId;
+    const item = mwItems.find(i => i.id === id);
+
+    if (item && item.caption === caption)
+        return;
+
+    try {
+        await MemoryWallStore.update(id, { caption });
+        if (item)
+            item.caption = caption;
+        const cardCap = document.querySelector(
+            '.mw-photo[data-id="' + id + '"] .mw-cap'
+        );
+        if (cardCap)
+            cardCap.textContent = caption;
+        mwSetStatus("saved");
+    } catch (err) {
+        console.error("memory wall caption save failed:", err);
+        mwSetStatus("couldn't save caption", true);
+    }
+}
+
+async function mwDeleteCurrent() {
+    if (!mwLightboxId)
+        return;
+
+    const id = mwLightboxId;
+    const item = mwItems.find(i => i.id === id);
+    const label = item && item.caption ? "“" + item.caption + "”" : "this photo";
+
+    if (!window.confirm("delete " + label + "? this can't be undone."))
+        return;
+
+    try {
+        await MemoryWallStore.remove(id);
+        mwRevokeUrl(id);
+        mwItems = mwItems.filter(i => i.id !== id);
+        mwLightboxId = null;
+
+        const lb = document.getElementById("mwLightbox");
+        if (lb) {
+            lb.classList.remove("is-open");
+            lb.setAttribute("aria-hidden", "true");
+        }
+        const img = document.getElementById("mwLbImage");
+        if (img)
+            img.removeAttribute("src");
+
+        await mwRender();
+        mwSetStatus("deleted");
+    } catch (err) {
+        console.error("memory wall delete failed:", err);
+        mwSetStatus("couldn't delete", true);
+    }
+}
+
+function mwInitDrag() {
+    const board = document.getElementById("mwBoard");
+    if (!board)
+        return;
+
+    board.addEventListener("pointerdown", e => {
+        if (mwIsMobile())
+            return;
+
+        const card = e.target.closest(".mw-photo");
+        if (!card || (e.button !== undefined && e.button !== 0))
+            return;
+
+        const bw = board.clientWidth || 1;
+        const bh = board.clientHeight || 1;
+
+        mwDrag = {
+            id: card.dataset.id,
+            card,
+            board,
+            pointerId: e.pointerId,
+            startX: e.clientX,
+            startY: e.clientY,
+            origLeftPx: ((parseFloat(card.style.left) || 0) / 100) * bw,
+            origTopPx: ((parseFloat(card.style.top) || 0) / 100) * bh,
+            moved: false
+        };
+
+        try {
+            card.setPointerCapture(e.pointerId);
+        } catch (_) {}
+
+        e.preventDefault();
+    });
+
+    board.addEventListener("pointermove", e => {
+        if (!mwDrag || (e.pointerId !== undefined && e.pointerId !== mwDrag.pointerId))
+            return;
+
+        const dx = e.clientX - mwDrag.startX;
+        const dy = e.clientY - mwDrag.startY;
+
+        if (!mwDrag.moved && Math.abs(dx) + Math.abs(dy) < 5)
+            return;
+
+        mwDrag.moved = true;
+        mwDrag.card.classList.add("is-dragging");
+
+        const bw = mwDrag.board.clientWidth || 1;
+        const bh = mwDrag.board.clientHeight || 1;
+        const cw = mwDrag.card.offsetWidth;
+        const ch = mwDrag.card.offsetHeight;
+
+        const leftPx = Math.min(Math.max(0, mwDrag.origLeftPx + dx), Math.max(0, bw - cw));
+        const topPx = Math.min(Math.max(0, mwDrag.origTopPx + dy), Math.max(0, bh - ch));
+
+        mwDrag.card.style.left = ((leftPx / bw) * 100) + "%";
+        mwDrag.card.style.top = ((topPx / bh) * 100) + "%";
+
+        e.preventDefault();
+    });
+
+    function endDrag(e) {
+        if (!mwDrag || (e && e.pointerId !== undefined && e.pointerId !== mwDrag.pointerId))
+            return;
+
+        const drag = mwDrag;
+        mwDrag = null;
+
+        try {
+            drag.card.releasePointerCapture(drag.pointerId);
+        } catch (_) {}
+
+        drag.card.classList.remove("is-dragging");
+
+        if (!drag.moved) {
+            mwOpenLightbox(drag.id);
+            return;
+        }
+
+        const x = parseFloat(drag.card.style.left) || 0;
+        const y = parseFloat(drag.card.style.top) || 0;
+        const item = mwItems.find(i => i.id === drag.id);
+        if (item) {
+            item.x = x;
+            item.y = y;
+        }
+
+        MemoryWallStore.update(drag.id, { x, y }).catch(err => {
+            console.error("memory wall move save failed:", err);
+            mwSetStatus("couldn't save position", true);
+        });
+    }
+
+    board.addEventListener("pointerup", endDrag);
+    board.addEventListener("pointercancel", endDrag);
+}
+
+function initMemoryWall() {
+    const input = document.getElementById("mwFileInput");
+    if (input)
+        input.addEventListener("change", async e => {
+            await mwHandleFiles(e.target.files);
+            e.target.value = "";
+        });
+
+    const lb = document.getElementById("mwLightbox");
+    if (lb)
+        lb.addEventListener("pointerdown", e => {
+            if (e.target === lb)
+                mwCloseLightbox();
+        });
+
+    const cap = document.getElementById("mwLbCaption");
+    if (cap)
+        cap.addEventListener("change", mwCommitLightboxFields);
+
+    const del = document.getElementById("mwLbDelete");
+    if (del)
+        del.addEventListener("click", mwDeleteCurrent);
+
+    const closeBtn = document.getElementById("mwLbClose");
+    if (closeBtn)
+        closeBtn.addEventListener("click", mwCloseLightbox);
+
+    mwInitDrag();
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape")
+            return;
+        if (mwLightboxId) {
+            e.preventDefault();
+            mwCloseLightbox();
+        } else if (memoryWallOpen) {
+            e.preventDefault();
+            closeMemoryWall();
+        }
+    }, true);
+
+    window.addEventListener("resize", () => {
+        if (!memoryWallOpen)
+            return;
+        clearTimeout(mwResizeTimer);
+        mwResizeTimer = setTimeout(mwRender, 180);
+    });
+}
+
+initMemoryWall();
 
 </script>
 
