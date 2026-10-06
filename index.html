@@ -13047,22 +13047,29 @@ function sendVisitPing() {
 sendVisitPing();
 
 /* =========================================================
-   🖼 "the things i remember" — scattered photo wall.
-   Fully local + self-contained: image blobs AND metadata live
-   in a dedicated IndexedDB database ("memory-wall"). It never
-   touches notes, drafts, history, deleted-note handling, Mary,
-   or Supabase sync.
+   🖼 "a gallery of things i remember about you" — photo wall.
+   Self-contained: it never touches notes, drafts, history,
+   deleted-note handling, Mary, or the notes sync path.
 
-   To add cross-device persistence later, reimplement the five
-   MemoryWallStore methods against Supabase (bytes -> a storage
-   bucket, metadata -> a table). Nothing else in the wall needs
-   to change — it only ever talks to this interface.
+   Source of truth = the existing "note-photos" Supabase bucket:
+   image bytes at memory-wall/<id>/<safeName>, plus versioned
+   manifest JSON files under memory-wall/manifest/ that hold every
+   item's metadata. IndexedDB ("memory-wall") is a local byte +
+   metadata cache so the wall opens offline and loads instantly;
+   remote metadata wins on merge and offline-created items are
+   pushed up on the next online open. No new table, no migration,
+   no auth, no new secrets (reuses supabaseClient).
 ========================================================= */
-
 const MemoryWallStore = (function () {
     const DB_NAME = "memory-wall";
     const DB_VERSION = 1;
     const STORE = "photos";
+    const BUCKET = "note-photos";
+    /* The bucket's anon policy allows INSERT but not UPDATE, so the manifest
+       can never be overwritten in place. Each write inserts a NEW versioned
+       file and reads pick the newest; old versions are pruned best-effort. */
+    const MANIFEST_DIR = "memory-wall/manifest/";
+    const byCreated = (a, b) => (a.created || 0) - (b.created || 0);
     let dbPromise = null;
 
     function openDb() {
@@ -13083,78 +13090,277 @@ const MemoryWallStore = (function () {
         return dbPromise;
     }
 
+    function idbAll() {
+        return openDb().then(db => new Promise((resolve, reject) => {
+            const req = db.transaction(STORE, "readonly").objectStore(STORE).getAll();
+            req.onsuccess = () => resolve(req.result || []);
+            req.onerror = () => reject(req.error);
+        }));
+    }
+
+    function idbPut(rec) {
+        return openDb().then(db => new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE, "readwrite");
+            tx.objectStore(STORE).put(rec);
+            tx.oncomplete = () => resolve(rec);
+            tx.onerror = () => reject(tx.error);
+            tx.onabort = () => reject(tx.error || new Error("aborted"));
+        }));
+    }
+
+    function idbGet(id) {
+        return openDb().then(db => new Promise((resolve, reject) => {
+            const req = db.transaction(STORE, "readonly").objectStore(STORE).get(id);
+            req.onsuccess = () => resolve(req.result || null);
+            req.onerror = () => reject(req.error);
+        }));
+    }
+
+    /* get + put inside one transaction, chained synchronously in onsuccess
+       so the tx cannot auto-commit between the two. */
+    function idbUpdate(id, patch) {
+        return openDb().then(db => new Promise((resolve, reject) => {
+            let result = null;
+            const tx = db.transaction(STORE, "readwrite");
+            const store = tx.objectStore(STORE);
+            const getReq = store.get(id);
+            getReq.onsuccess = () => {
+                const existing = getReq.result;
+                if (!existing)
+                    return;
+                result = { ...existing, ...patch, id: existing.id };
+                store.put(result);
+            };
+            tx.oncomplete = () => resolve(result);
+            tx.onerror = () => reject(tx.error);
+            tx.onabort = () => reject(tx.error || new Error("aborted"));
+        }));
+    }
+
+    function idbDelete(id) {
+        return openDb().then(db => new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE, "readwrite");
+            tx.objectStore(STORE).delete(id);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+            tx.onabort = () => reject(tx.error || new Error("aborted"));
+        }));
+    }
+
+    function safeName(name) {
+        return (name || "file").replace(/[^a-zA-Z0-9._-]/g, "-");
+    }
+
+    function pathFor(rec) {
+        return rec.path || ("memory-wall/" + rec.id + "/" + safeName(rec.name));
+    }
+
+    /* metadata-only view of a record, for the manifest */
+    function strip(rec) {
+        const meta = { ...rec };
+        delete meta.blob;
+        meta.path = pathFor(rec);
+        return meta;
+    }
+
+    /* newest version first */
+    async function manifestFiles() {
+        const { data, error } = await supabaseClient
+            .storage.from(BUCKET)
+            .list(MANIFEST_DIR, { limit: 1000 });
+        if (error || !Array.isArray(data))
+            return null;
+        return data
+            .map(f => f && f.name)
+            .filter(name => name && name.endsWith(".json"))
+            .sort()
+            .reverse()
+            .map(name => MANIFEST_DIR + name);
+    }
+
+    /* reachable false => storage could not be read, so no remote write may
+       be attempted: a blind write would supersede the real manifest. */
+    async function remoteState() {
+        const files = await manifestFiles();
+        if (files === null)
+            return { reachable: false, items: null };
+        if (!files.length)
+            return { reachable: true, items: null };
+
+        try {
+            for (const path of files) {
+                const { data, error } = await supabaseClient
+                    .storage.from(BUCKET).download(path);
+                if (error || !data)
+                    continue;
+                const parsed = JSON.parse(await data.text());
+                if (Array.isArray(parsed && parsed.items))
+                    return { reachable: true, items: parsed.items };
+            }
+        } catch (err) {
+            return { reachable: false, items: null };
+        }
+
+        return { reachable: true, items: null };
+    }
+
+    async function writeManifest(items) {
+        const payload = JSON.stringify({ version: 1, items });
+        const path = MANIFEST_DIR +
+            Date.now().toString(36).padStart(8, "0") + "-" +
+            Math.random().toString(36).slice(2, 8) + ".json";
+        const { error } = await supabaseClient
+            .storage.from(BUCKET)
+            .upload(path, new Blob([payload], { type: "application/json" }), {
+                contentType: "application/json"
+            });
+        if (error)
+            return false;
+
+        /* every write leaves a version behind, so drop the superseded ones */
+        try {
+            const stale = (await manifestFiles()) || [];
+            if (stale.length > 1)
+                await supabaseClient.storage.from(BUCKET).remove(stale.slice(1));
+        } catch (err) {
+            /* pruning is best-effort; reads pick the newest version anyway */
+        }
+
+        return true;
+    }
+
+    async function uploadBytes(rec) {
+        const { error } = await supabaseClient
+            .storage.from(BUCKET)
+            .upload(pathFor(rec), rec.blob, {
+                upsert: true,
+                contentType: rec.type || "application/octet-stream"
+            });
+        return !error;
+    }
+
+    async function downloadBytes(path) {
+        const { data, error } = await supabaseClient
+            .storage.from(BUCKET).download(path);
+        return error ? null : data;
+    }
+
+    async function deleteBytes(path) {
+        await supabaseClient.storage.from(BUCKET).remove([path]);
+    }
+
     return {
         async list() {
-            const db = await openDb();
-            return new Promise((resolve, reject) => {
-                const req = db
-                    .transaction(STORE, "readonly")
-                    .objectStore(STORE)
-                    .getAll();
-                req.onsuccess = () =>
-                    resolve(
-                        (req.result || []).sort(
-                            (a, b) => (a.created || 0) - (b.created || 0)
-                        )
-                    );
-                req.onerror = () => reject(req.error);
-            });
+            const local = (await idbAll()).sort(byCreated);
+
+            if (!navigator.onLine)
+                return local;
+
+            const state = await remoteState();
+
+            if (!state.reachable)
+                return local;
+
+            if (!state.items) {
+                /* first publish: seed the manifest from whatever is local */
+                if (local.length) {
+                    for (const rec of local)
+                        if (rec.blob)
+                            await uploadBytes(rec);
+                    await writeManifest(local.map(strip));
+                }
+                return local;
+            }
+
+            const remote = state.items;
+            const localById = new Map(local.map(r => [r.id, r]));
+            const merged = [];
+
+            for (const meta of remote) {
+                let rec = localById.get(meta.id);
+                rec = rec
+                    ? { ...rec, ...meta, path: meta.path || pathFor(rec) }
+                    : { ...meta, blob: null };
+
+                if (!rec.blob) {
+                    const blob = await downloadBytes(rec.path);
+                    if (blob) {
+                        rec.blob = blob;
+                        await idbPut(rec);
+                    }
+                }
+
+                localById.delete(meta.id);
+                merged.push(rec);
+            }
+
+            /* items created offline: push their bytes up and keep them */
+            for (const rec of localById.values()) {
+                if (rec.blob)
+                    await uploadBytes(rec);
+                merged.push(rec);
+            }
+
+            for (const rec of merged)
+                await idbPut(rec);
+
+            await writeManifest(merged.map(strip));
+
+            return merged.sort(byCreated);
         },
 
         async put(record) {
-            const db = await openDb();
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE, "readwrite");
-                tx.objectStore(STORE).put(record);
-                tx.oncomplete = () => resolve(record);
-                tx.onerror = () => reject(tx.error);
-                tx.onabort = () => reject(tx.error || new Error("aborted"));
-            });
+            record.path = pathFor(record);
+            await idbPut(record);
+
+            if (navigator.onLine) {
+                await uploadBytes(record);
+                const state = await remoteState();
+                if (state.reachable) {
+                    const next = (state.items || [])
+                        .filter(m => m.id !== record.id)
+                        .concat(strip(record));
+                    await writeManifest(next);
+                }
+            }
+
+            return record;
         },
 
         async get(id) {
-            const db = await openDb();
-            return new Promise((resolve, reject) => {
-                const req = db
-                    .transaction(STORE, "readonly")
-                    .objectStore(STORE)
-                    .get(id);
-                req.onsuccess = () => resolve(req.result || null);
-                req.onerror = () => reject(req.error);
-            });
+            return idbGet(id);
         },
 
-        /* get + put issued inside one transaction, synchronously chained
-           in onsuccess so the tx cannot auto-commit between the two. */
         async update(id, patch) {
-            const db = await openDb();
-            return new Promise((resolve, reject) => {
-                let result = null;
-                const tx = db.transaction(STORE, "readwrite");
-                const store = tx.objectStore(STORE);
-                const getReq = store.get(id);
-                getReq.onsuccess = () => {
-                    const existing = getReq.result;
-                    if (!existing)
-                        return;
-                    result = { ...existing, ...patch, id: existing.id };
-                    store.put(result);
-                };
-                tx.oncomplete = () => resolve(result);
-                tx.onerror = () => reject(tx.error);
-                tx.onabort = () => reject(tx.error || new Error("aborted"));
-            });
+            const rec = await idbUpdate(id, patch);
+
+            if (rec && navigator.onLine) {
+                const state = await remoteState();
+                if (state.reachable) {
+                    const remote = state.items || [];
+                    let next;
+                    if (remote.some(m => m.id === id)) {
+                        next = remote.map(m => m.id === id ? { ...m, ...patch, id } : m);
+                    } else {
+                        next = remote.concat(strip(rec));
+                    }
+                    await writeManifest(next);
+                }
+            }
+
+            return rec;
         },
 
         async remove(id) {
-            const db = await openDb();
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE, "readwrite");
-                tx.objectStore(STORE).delete(id);
-                tx.oncomplete = () => resolve();
-                tx.onerror = () => reject(tx.error);
-                tx.onabort = () => reject(tx.error || new Error("aborted"));
-            });
+            const rec = await idbGet(id);
+            await idbDelete(id);
+
+            if (rec && navigator.onLine) {
+                await deleteBytes(rec.path || pathFor(rec));
+                const state = await remoteState();
+                if (state.reachable)
+                    await writeManifest((state.items || []).filter(m => m.id !== id));
+            }
         }
     };
 })();
