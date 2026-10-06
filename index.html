@@ -13282,7 +13282,13 @@ const MemoryWallStore = (function () {
                     ? { ...rec, ...meta, path: meta.path || pathFor(rec) }
                     : { ...meta, blob: null };
 
-                if (!rec.blob) {
+                /* a cached blob that is missing, empty, or a different size
+                   than the manifest is stale/corrupt — re-fetch the real bytes
+                   so a bad local copy can never stick as a broken image. */
+                const blobBad = !rec.blob ||
+                    !rec.blob.size ||
+                    (meta.size && rec.blob.size !== meta.size);
+                if (blobBad) {
                     const blob = await downloadBytes(rec.path);
                     if (blob) {
                         rec.blob = blob;
@@ -13538,7 +13544,6 @@ async function mwRender() {
         if (url)
             img.src = url;
         img.alt = item.caption || "a remembered photo";
-        img.loading = "lazy";
         card.appendChild(img);
 
         const cap = document.createElement("div");
