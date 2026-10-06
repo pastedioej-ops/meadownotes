@@ -13165,9 +13165,15 @@ const MemoryWallStore = (function () {
 
     /* newest version first */
     async function manifestFiles() {
-        const { data, error } = await supabaseClient
-            .storage.from(BUCKET)
-            .list(MANIFEST_DIR, { limit: 1000 });
+        let data, error;
+        try {
+            ({ data, error } = await supabaseClient
+                .storage.from(BUCKET)
+                .list(MANIFEST_DIR, { limit: 1000 }));
+        } catch (err) {
+            console.warn("memory wall manifest list failed:", err);
+            return null;
+        }
         if (error || !Array.isArray(data))
             return null;
         return data
@@ -13249,9 +13255,24 @@ const MemoryWallStore = (function () {
         await supabaseClient.storage.from(BUCKET).remove([path]);
     }
 
+    /* IndexedDB is a best-effort cache: if it is unavailable (private
+       browsing, quota, blocked open) every helper below swallows the failure
+       so the wall still renders straight from the bucket instead of blanking
+       out with "couldn't load your photos". */
+    function cachePut(rec) {
+        return idbPut(rec).catch(err => {
+            console.warn("memory wall cache write skipped:", err);
+        });
+    }
+
     return {
         async list() {
-            const local = (await idbAll()).sort(byCreated);
+            let local = [];
+            try {
+                local = (await idbAll()).sort(byCreated);
+            } catch (err) {
+                console.warn("memory wall cache read skipped:", err);
+            }
 
             if (!navigator.onLine)
                 return local;
@@ -13265,9 +13286,14 @@ const MemoryWallStore = (function () {
                 /* first publish: seed the manifest from whatever is local */
                 if (local.length) {
                     for (const rec of local)
-                        if (rec.blob)
-                            await uploadBytes(rec);
-                    await writeManifest(local.map(strip));
+                        if (rec.blob) {
+                            try { await uploadBytes(rec); } catch (err) {
+                                console.warn("memory wall seed upload skipped:", err);
+                            }
+                        }
+                    try { await writeManifest(local.map(strip)); } catch (err) {
+                        console.warn("memory wall seed manifest skipped:", err);
+                    }
                 }
                 return local;
             }
@@ -13277,56 +13303,71 @@ const MemoryWallStore = (function () {
             const merged = [];
 
             for (const meta of remote) {
-                let rec = localById.get(meta.id);
-                rec = rec
-                    ? { ...rec, ...meta, path: meta.path || pathFor(rec) }
-                    : { ...meta, blob: null };
+                /* one unreadable item must never blank the whole wall */
+                try {
+                    let rec = localById.get(meta.id);
+                    rec = rec
+                        ? { ...rec, ...meta, path: meta.path || pathFor(rec) }
+                        : { ...meta, blob: null };
 
-                /* a cached blob that is missing, empty, or a different size
-                   than the manifest is stale/corrupt — re-fetch the real bytes
-                   so a bad local copy can never stick as a broken image. */
-                const blobBad = !rec.blob ||
-                    !rec.blob.size ||
-                    (meta.size && rec.blob.size !== meta.size);
-                if (blobBad) {
-                    const blob = await downloadBytes(rec.path);
-                    if (blob) {
-                        rec.blob = blob;
-                        await idbPut(rec);
+                    /* a cached blob that is missing, empty, or a different size
+                       than the manifest is stale/corrupt — re-fetch the real
+                       bytes so a bad local copy can never stick as a broken
+                       image. */
+                    const blobBad = !rec.blob ||
+                        !rec.blob.size ||
+                        (meta.size && rec.blob.size !== meta.size);
+                    if (blobBad) {
+                        const blob = await downloadBytes(rec.path);
+                        if (blob) {
+                            rec.blob = blob;
+                            await cachePut(rec);
+                        }
                     }
-                }
 
-                localById.delete(meta.id);
-                merged.push(rec);
+                    localById.delete(meta.id);
+                    merged.push(rec);
+                } catch (err) {
+                    console.warn("memory wall: skipped item", meta && meta.id, err);
+                }
             }
 
             /* items created offline: push their bytes up and keep them */
             for (const rec of localById.values()) {
-                if (rec.blob)
-                    await uploadBytes(rec);
+                if (rec.blob) {
+                    try { await uploadBytes(rec); } catch (err) {
+                        console.warn("memory wall offline upload skipped:", err);
+                    }
+                }
                 merged.push(rec);
             }
 
             for (const rec of merged)
-                await idbPut(rec);
+                await cachePut(rec);
 
-            await writeManifest(merged.map(strip));
+            try { await writeManifest(merged.map(strip)); } catch (err) {
+                console.warn("memory wall manifest write skipped:", err);
+            }
 
             return merged.sort(byCreated);
         },
 
         async put(record) {
             record.path = pathFor(record);
-            await idbPut(record);
+            await cachePut(record);
 
             if (navigator.onLine) {
-                await uploadBytes(record);
-                const state = await remoteState();
-                if (state.reachable) {
-                    const next = (state.items || [])
-                        .filter(m => m.id !== record.id)
-                        .concat(strip(record));
-                    await writeManifest(next);
+                try {
+                    await uploadBytes(record);
+                    const state = await remoteState();
+                    if (state.reachable) {
+                        const next = (state.items || [])
+                            .filter(m => m.id !== record.id)
+                            .concat(strip(record));
+                        await writeManifest(next);
+                    }
+                } catch (err) {
+                    console.warn("memory wall upload skipped:", err);
                 }
             }
 
@@ -13334,23 +13375,39 @@ const MemoryWallStore = (function () {
         },
 
         async get(id) {
-            return idbGet(id);
+            try {
+                return await idbGet(id);
+            } catch (err) {
+                console.warn("memory wall cache get skipped:", err);
+                return null;
+            }
         },
 
         async update(id, patch) {
-            const rec = await idbUpdate(id, patch);
+            let rec = null;
+            try {
+                rec = await idbUpdate(id, patch);
+            } catch (err) {
+                console.warn("memory wall cache update skipped:", err);
+            }
 
-            if (rec && navigator.onLine) {
-                const state = await remoteState();
-                if (state.reachable) {
-                    const remote = state.items || [];
-                    let next;
-                    if (remote.some(m => m.id === id)) {
-                        next = remote.map(m => m.id === id ? { ...m, ...patch, id } : m);
-                    } else {
-                        next = remote.concat(strip(rec));
+            if (navigator.onLine) {
+                try {
+                    const state = await remoteState();
+                    if (state.reachable) {
+                        const remote = state.items || [];
+                        let next;
+                        if (remote.some(m => m.id === id)) {
+                            next = remote.map(m => m.id === id ? { ...m, ...patch, id } : m);
+                        } else if (rec) {
+                            next = remote.concat(strip(rec));
+                        } else {
+                            next = remote;
+                        }
+                        await writeManifest(next);
                     }
-                    await writeManifest(next);
+                } catch (err) {
+                    console.warn("memory wall manifest update skipped:", err);
                 }
             }
 
@@ -13358,14 +13415,33 @@ const MemoryWallStore = (function () {
         },
 
         async remove(id) {
-            const rec = await idbGet(id);
-            await idbDelete(id);
+            let rec = null;
+            try {
+                rec = await idbGet(id);
+            } catch (err) {
+                console.warn("memory wall cache get skipped:", err);
+            }
+            try {
+                await idbDelete(id);
+            } catch (err) {
+                console.warn("memory wall cache delete skipped:", err);
+            }
 
-            if (rec && navigator.onLine) {
-                await deleteBytes(rec.path || pathFor(rec));
-                const state = await remoteState();
-                if (state.reachable)
-                    await writeManifest((state.items || []).filter(m => m.id !== id));
+            if (navigator.onLine) {
+                try {
+                    const state = await remoteState();
+                    if (state.reachable) {
+                        const items = state.items || [];
+                        /* fall back to the manifest path if the cache is gone */
+                        const path = (rec && (rec.path || pathFor(rec))) ||
+                            (items.find(m => m.id === id) || {}).path;
+                        if (path)
+                            await deleteBytes(path);
+                        await writeManifest(items.filter(m => m.id !== id));
+                    }
+                } catch (err) {
+                    console.warn("memory wall remote delete skipped:", err);
+                }
             }
         }
     };
