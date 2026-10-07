@@ -13450,12 +13450,15 @@ const MemoryWallStore = (function () {
 let memoryWallOpen = false;
 let mwItems = [];
 let mwUrls = new Map();
+let mwSigned = new Map();
 let mwLightboxId = null;
 let mwDrag = null;
 let mwResizeTimer = null;
 
 const MW_MAX_SIZE = 8 * 1024 * 1024;
 const MW_ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
+const MW_BUCKET = "note-photos";
+const MW_SIGN_SECONDS = 3600;
 
 function mwId() {
     return "mw-" +
@@ -13498,6 +13501,48 @@ function mwRevokeUrl(id) {
 function mwRevokeAllUrls() {
     mwUrls.forEach(url => URL.revokeObjectURL(url));
     mwUrls.clear();
+}
+
+/* The note-photos bucket is private, so an <img> can't load it directly.
+   A signed URL lets the browser fetch the bytes natively (no blob, no
+   IndexedDB), which is far more reliable than object URLs across browsers.
+   Signed once per item per session and cached; falls back to the cached
+   blob when offline or if signing fails. */
+async function mwSignedUrlFor(item) {
+    if (!item || !item.id || !item.path)
+        return null;
+    if (mwSigned.has(item.id))
+        return mwSigned.get(item.id);
+    if (!navigator.onLine)
+        return null;
+    try {
+        const { data, error } = await supabaseClient
+            .storage.from(MW_BUCKET)
+            .createSignedUrl(item.path, MW_SIGN_SECONDS);
+        if (error || !data || !data.signedUrl)
+            return null;
+        mwSigned.set(item.id, data.signedUrl);
+        return data.signedUrl;
+    } catch (err) {
+        console.warn("memory wall sign failed:", err);
+        return null;
+    }
+}
+
+/* best available src for an item: signed URL first, cached blob second */
+function mwDisplayUrlFor(item) {
+    if (!item || !item.id)
+        return null;
+    return mwSigned.get(item.id) || mwUrlFor(item);
+}
+
+/* if a signed URL expired or failed to paint, re-sign once, else use blob */
+async function mwRecoverImage(item, img) {
+    img.onerror = null;
+    mwSigned.delete(item.id);
+    const url = (await mwSignedUrlFor(item)) || mwUrlFor(item);
+    if (url && img.src !== url)
+        img.src = url;
 }
 
 async function openMemoryWall() {
@@ -13604,6 +13649,10 @@ async function mwRender() {
 
     const mobile = mwIsMobile();
 
+    /* sign display URLs up front (private bucket); offline items keep their
+       cached blob and simply won't get a signed URL */
+    await Promise.all(mwItems.map(item => mwSignedUrlFor(item)));
+
     mwItems.forEach(item => {
         const card = document.createElement("div");
         card.className = "mw-photo";
@@ -13616,10 +13665,13 @@ async function mwRender() {
         );
 
         const img = document.createElement("img");
-        const url = mwUrlFor(item);
+        const url = mwDisplayUrlFor(item);
         if (url)
             img.src = url;
         img.alt = item.caption || "a remembered photo";
+        img.addEventListener("error", () => {
+            mwRecoverImage(item, img);
+        }, { once: true });
         card.appendChild(img);
 
         const cap = document.createElement("div");
@@ -13725,9 +13777,10 @@ function mwOpenLightbox(id) {
 
     mwLightboxId = id;
 
-    const url = mwUrlFor(item);
+    const url = mwDisplayUrlFor(item);
     if (url)
         img.src = url;
+    img.onerror = () => { mwRecoverImage(item, img); };
     img.alt = item.caption || "a remembered photo";
     cap.value = item.caption || "";
 
